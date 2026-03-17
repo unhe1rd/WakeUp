@@ -8,6 +8,9 @@ interface AlarmDao {
     @Query("SELECT * FROM alarms ORDER BY hour, minute ASC")
     fun getAllAlarms(): Flow<List<Alarm>>
 
+    @Query("SELECT * FROM alarms ORDER BY hour, minute ASC")
+    suspend fun getAllAlarmsList(): List<Alarm>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(alarm: Alarm)
 
