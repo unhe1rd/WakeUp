@@ -36,7 +36,7 @@
             android:launchMode="singleInstance"
             android:exported="false" />
 
-        <receiver android:name=".AlarmReceiver" android:exported="false" />
+        <receiver android:name=".receiver.AlarmReceiver" android:exported="false" />
         
     </application>
 

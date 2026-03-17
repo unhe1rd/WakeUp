@@ -1,6 +1,7 @@
-package com.bananchiki.wakeup
+package com.bananchiki.wakeup.data.local
 
 import androidx.room.*
+import com.bananchiki.wakeup.data.model.Alarm
 import kotlinx.coroutines.flow.Flow
 
 @Dao

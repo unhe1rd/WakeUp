@@ -1,4 +1,4 @@
-package com.bananchiki.wakeup
+package com.bananchiki.wakeup.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -11,11 +11,7 @@ import android.os.VibratorManager
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.bananchiki.wakeup.ui.alarm.AlarmScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 
 class AlarmActivity : ComponentActivity() {
@@ -25,11 +21,12 @@ class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Показываем Activity поверх экрана блокировки
+        // Show Activity over lock screen
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         } else {
+            @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
@@ -41,42 +38,19 @@ class AlarmActivity : ComponentActivity() {
 
         setContent {
             WakeUpTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "ALARM!",
-                            style = MaterialTheme.typography.displayLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(32.dp))
-                        Button(
-                            onClick = { dismissAlarm() },
-                            modifier = Modifier.size(200.dp),
-                            shape = MaterialTheme.shapes.extraLarge
-                        ) {
-                            Text("STOP", style = MaterialTheme.typography.headlineLarge)
-                        }
-                    }
-                }
+                AlarmScreen(onDismiss = { dismissAlarm() })
             }
         }
     }
 
     private fun startAlarmEffects() {
-        // Звук
+        // Sound
         val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
         ringtone = RingtoneManager.getRingtone(this, alarmUri)
         ringtone?.play()
 
-        // Вибрация
+        // Vibration
         vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
         } else {
