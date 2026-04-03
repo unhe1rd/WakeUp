@@ -30,13 +30,13 @@ data class Alarm(
 
     val daysLabel: String
         get() {
-            val dayNames = listOf("S", "M", "T", "W", "T", "F", "S")
+            val dayNames = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
             val active = daysOfWeek.mapIndexedNotNull { i, c ->
                 if (c == '1') dayNames[i] else null
             }
             return when {
-                active.size == 7 -> "Everyday"
-                active.isEmpty() -> "Once"
+                active.size == 7 -> "Каждый день"
+                active.isEmpty() -> "Один раз"
                 else -> active.joinToString(" ")
             }
         }
