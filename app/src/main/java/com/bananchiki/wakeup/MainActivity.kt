@@ -141,11 +141,11 @@ class MainActivity : ComponentActivity() {
                             showAddDialog = false
                             alarmBeingEdited = null
                         },
-                        onConfirm = { hour, minute, label, days ->
+                        onConfirm = { hour, minute, label, days, taskType ->
                             if (alarmBeingEdited != null) {
-                                viewModel.editAlarm(alarmBeingEdited!!, hour, minute, label, days)
+                                viewModel.editAlarm(alarmBeingEdited!!, hour, minute, label, days, taskType)
                             } else {
-                                viewModel.addAlarm(hour, minute, label, days)
+                                viewModel.addAlarm(hour, minute, label, days, taskType)
                             }
                             showAddDialog = false
                             alarmBeingEdited = null

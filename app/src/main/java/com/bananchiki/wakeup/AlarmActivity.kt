@@ -38,7 +38,14 @@ class AlarmActivity : ComponentActivity() {
 
         setContent {
             WakeUpTheme {
-                AlarmScreen(onDismiss = { dismissAlarm() })
+                val taskType = intent.getStringExtra("task_type") ?: "NONE"
+                val alarmLabel = intent.getStringExtra("alarm_label") ?: "Wake up!"
+                
+                AlarmScreen(
+                    label = alarmLabel,
+                    taskType = taskType,
+                    onDismiss = { dismissAlarm() }
+                )
             }
         }
     }

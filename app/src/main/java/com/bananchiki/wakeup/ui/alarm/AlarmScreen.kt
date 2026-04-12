@@ -22,7 +22,7 @@ import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!") {
+fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: String = "NONE") {
     var currentTime by remember { mutableStateOf(Calendar.getInstance().time) }
 
     LaunchedEffect(Unit) {
@@ -91,52 +91,58 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!") {
                 letterSpacing = (-2).sp
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Alarm Label
             Text(
                 text = label,
                 color = Color(0xFF333333),
-                fontSize = 42.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Snooze Button
-            Button(
-                onClick = { /* Snooze could just dismiss for now */ onDismiss() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black.copy(alpha = 0.25f),
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.padding(bottom = 64.dp)
-            ) {
-                Text(
-                    text = "Snooze",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                )
-            }
+            if (taskType == "NONE") {
+                // Snooze Button
+                Button(
+                    onClick = { /* Snooze could just dismiss for now */ onDismiss() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black.copy(alpha = 0.25f),
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.padding(bottom = 64.dp)
+                ) {
+                    Text(
+                        text = "Snooze",
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                }
 
-            // Dismiss Button
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Amber,
-                    contentColor = Color(0xFF1A1A1A) // Dark text on amber
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-            ) {
-                Text(
-                    text = "Dismiss",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                // Dismiss Button
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Amber,
+                        contentColor = Color(0xFF1A1A1A) // Dark text on amber
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                ) {
+                    Text(
+                        text = "Dismiss",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            } else if (taskType == "MATH") {
+                MathTaskScreen(onComplete = onDismiss)
+            } else if (taskType == "MEMORY") {
+                MemoryTaskScreen(onComplete = onDismiss)
             }
             
             Spacer(modifier = Modifier.height(16.dp))

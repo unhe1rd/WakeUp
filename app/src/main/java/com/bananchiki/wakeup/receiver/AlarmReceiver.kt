@@ -29,6 +29,9 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            putExtra("alarm_id", intent.getIntExtra("alarm_id", -1))
+            putExtra("task_type", intent.getStringExtra("task_type") ?: "NONE")
+            putExtra("alarm_label", intent.getStringExtra("alarm_label") ?: "Wake up!")
         }
 
         val pendingIntent = PendingIntent.getActivity(

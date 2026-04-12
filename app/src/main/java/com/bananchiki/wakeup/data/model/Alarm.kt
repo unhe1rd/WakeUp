@@ -11,7 +11,8 @@ data class Alarm(
     val minute: Int,
     val label: String,
     val isEnabled: Boolean = true,
-    val daysOfWeek: String = "0000000" // S M T W T F S — "1" = active, "0" = inactive
+    val daysOfWeek: String = "0000000", // S M T W T F S — "1" = active, "0" = inactive
+    val taskType: String = "NONE" // NONE, MATH, MEMORY
 ) {
     val timeFormatted: String
         get() = String.format("%02d:%02d", hour, minute)
