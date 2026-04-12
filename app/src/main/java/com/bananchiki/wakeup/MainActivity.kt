@@ -68,12 +68,16 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: "home"
                 var showAddDialog by remember { mutableStateOf(false) }
+                var alarmBeingEdited by remember { mutableStateOf<com.bananchiki.wakeup.data.model.Alarm?>(null) }
 
                 Scaffold(
                     bottomBar = {
                         BottomNavBar(
                             currentRoute = currentRoute,
-                            onAddClick = { showAddDialog = true },
+                            onAddClick = { 
+                                alarmBeingEdited = null
+                                showAddDialog = true 
+                            },
                             onProgressClick = {
                                 navController.navigate("progress") {
                                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -107,7 +111,11 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 alarms = alarms,
                                 onDeleteAlarm = { alarm -> viewModel.deleteAlarm(alarm) },
-                                onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) }
+                                onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) },
+                                onEditAlarm = { alarm ->
+                                    alarmBeingEdited = alarm
+                                    showAddDialog = true
+                                }
                             )
                         }
                         composable("progress") {
@@ -128,10 +136,19 @@ class MainActivity : ComponentActivity() {
 
                 if (showAddDialog) {
                     AddAlarmDialog(
-                        onDismiss = { showAddDialog = false },
-                        onConfirm = { hour, minute, label, days ->
-                            viewModel.addAlarm(hour, minute, label, days)
+                        alarmToEdit = alarmBeingEdited,
+                        onDismiss = { 
                             showAddDialog = false
+                            alarmBeingEdited = null
+                        },
+                        onConfirm = { hour, minute, label, days ->
+                            if (alarmBeingEdited != null) {
+                                viewModel.editAlarm(alarmBeingEdited!!, hour, minute, label, days)
+                            } else {
+                                viewModel.addAlarm(hour, minute, label, days)
+                            }
+                            showAddDialog = false
+                            alarmBeingEdited = null
                         }
                     )
                 }

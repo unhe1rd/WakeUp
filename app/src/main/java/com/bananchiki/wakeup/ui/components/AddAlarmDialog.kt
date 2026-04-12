@@ -13,18 +13,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.bananchiki.wakeup.data.model.Alarm
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddAlarmDialog(
+    alarmToEdit: Alarm? = null,
     onDismiss: () -> Unit,
     onConfirm: (Int, Int, String, String) -> Unit
 ) {
-    var selectedHour by remember { mutableIntStateOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) }
-    var selectedMinute by remember { mutableIntStateOf(Calendar.getInstance().get(Calendar.MINUTE)) }
-    var label by remember { mutableStateOf("Просыпайся!") }
-    var daysOfWeek by remember { mutableStateOf("0000000") }
+    var selectedHour by remember { mutableIntStateOf(alarmToEdit?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) }
+    var selectedMinute by remember { mutableIntStateOf(alarmToEdit?.minute ?: Calendar.getInstance().get(Calendar.MINUTE)) }
+    var label by remember { mutableStateOf(alarmToEdit?.label ?: "Просыпайся!") }
+    var daysOfWeek by remember { mutableStateOf(alarmToEdit?.daysOfWeek ?: "0000000") }
     var showTimePicker by remember { mutableStateOf(false) }
     
     val dayLetters = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
@@ -61,7 +63,10 @@ fun AddAlarmDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
-            Text("Новый будильник", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = if (alarmToEdit != null) "Редактирование" else "Новый будильник", 
+                style = MaterialTheme.typography.headlineMedium
+            )
         },
         text = {
             Column {
