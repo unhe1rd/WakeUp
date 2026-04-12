@@ -101,7 +101,7 @@ fun BottomNavBar(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .clickable { /* TODO */ }
+                        .clickable { }
                 ) {
                     Icon(
                         Icons.Outlined.Alarm,
@@ -140,7 +140,6 @@ fun BottomNavBar(
             }
         }
 
-        // FAB in center
         FloatingActionButton(
             onClick = onAddClick,
             modifier = Modifier
