@@ -20,9 +20,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         allAlarms = repository.allAlarms
     }
 
-    fun addAlarm(hour: Int, minute: Int, label: String = "Wake up!", daysOfWeek: String = "0000000") {
+    fun editAlarm(alarm: Alarm, hour: Int, minute: Int, label: String, daysOfWeek: String, taskType: String) {
         viewModelScope.launch {
-            val alarm = Alarm(hour = hour, minute = minute, label = label, daysOfWeek = daysOfWeek)
+            val updated = alarm.copy(hour = hour, minute = minute, label = label, daysOfWeek = daysOfWeek, taskType = taskType, isEnabled = true)
+            repository.update(updated)
+            repository.scheduleAlarm(updated)
+        }
+    }
+
+    fun addAlarm(hour: Int, minute: Int, label: String = "Wake up!", daysOfWeek: String = "0000000", taskType: String = "NONE") {
+        viewModelScope.launch {
+            val alarm = Alarm(hour = hour, minute = minute, label = label, daysOfWeek = daysOfWeek, taskType = taskType)
             repository.insert(alarm)
             // Schedule after insert — fetch inserted alarm to get generated ID
             val allAlarmsList = repository.getAllAlarmsList()

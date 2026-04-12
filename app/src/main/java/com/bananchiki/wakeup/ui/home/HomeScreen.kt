@@ -13,7 +13,8 @@ import androidx.compose.material3.MaterialTheme
 fun HomeScreen(
     alarms: List<Alarm>,
     onDeleteAlarm: (Alarm) -> Unit,
-    onToggleAlarm: (Alarm, Boolean) -> Unit
+    onToggleAlarm: (Alarm, Boolean) -> Unit,
+    onEditAlarm: (Alarm) -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -38,6 +39,7 @@ fun HomeScreen(
                 alarms = alarms,
                 onToggleAlarm = onToggleAlarm,
                 onDeleteAlarm = onDeleteAlarm,
+                onEditAlarm = onEditAlarm,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
