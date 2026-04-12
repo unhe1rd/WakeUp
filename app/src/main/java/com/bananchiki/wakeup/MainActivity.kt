@@ -31,6 +31,7 @@ import com.bananchiki.wakeup.ui.components.AddAlarmDialog
 import com.bananchiki.wakeup.ui.components.BottomNavBar
 import com.bananchiki.wakeup.ui.home.HomeScreen
 import com.bananchiki.wakeup.ui.home.HomeViewModel
+import com.bananchiki.wakeup.ui.progress.ProgressScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 
 class MainActivity : ComponentActivity() {
@@ -73,6 +74,13 @@ class MainActivity : ComponentActivity() {
                         BottomNavBar(
                             currentRoute = currentRoute,
                             onAddClick = { showAddDialog = true },
+                            onProgressClick = {
+                                navController.navigate("progress") {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
                             onHomeClick = {
                                 navController.navigate("home") {
                                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -101,6 +109,9 @@ class MainActivity : ComponentActivity() {
                                 onDeleteAlarm = { alarm -> viewModel.deleteAlarm(alarm) },
                                 onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) }
                             )
+                        }
+                        composable("progress") {
+                            ProgressScreen()
                         }
                         composable("settings") {
                             com.bananchiki.wakeup.ui.settings.SettingsScreen(
