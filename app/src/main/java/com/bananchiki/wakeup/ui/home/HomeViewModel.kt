@@ -41,6 +41,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun editAlarm(alarm: Alarm, hour: Int, minute: Int, label: String, daysOfWeek: String) {
+        viewModelScope.launch {
+            val updated = alarm.copy(hour = hour, minute = minute, label = label, daysOfWeek = daysOfWeek, isEnabled = true)
+            repository.cancelAlarm(alarm)
+            repository.update(updated)
+            repository.scheduleAlarm(updated)
+        }
+    }
+
     fun deleteAlarm(alarm: Alarm) {
         viewModelScope.launch {
             repository.cancelAlarm(alarm)

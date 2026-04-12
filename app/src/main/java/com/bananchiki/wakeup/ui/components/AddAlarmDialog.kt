@@ -69,7 +69,10 @@ fun AddAlarmDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
-            Text("Новый будильник", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = if (alarmToEdit != null) "Редактирование" else "Новый будильник", 
+                style = MaterialTheme.typography.headlineMedium
+            )
         },
         text = {
             Column {
