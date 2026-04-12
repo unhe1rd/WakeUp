@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Settings
@@ -21,7 +22,12 @@ import androidx.compose.ui.unit.dp
 import com.bananchiki.wakeup.ui.theme.*
 
 @Composable
-fun BottomNavBar(onAddClick: () -> Unit) {
+fun BottomNavBar(
+    currentRoute: String = "home",
+    onAddClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onHomeClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -33,7 +39,7 @@ fun BottomNavBar(onAddClick: () -> Unit) {
                 .fillMaxWidth()
                 .height(64.dp)
                 .align(Alignment.BottomCenter),
-            color = White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 8.dp
         ) {
             Row(
@@ -44,50 +50,96 @@ fun BottomNavBar(onAddClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Home
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { }
+                val isHome = currentRoute == "home" || currentRoute.isBlank()
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .clickable { onHomeClick() }
                 ) {
-                    Icon(Icons.Filled.Home, contentDescription = "Home", tint = Amber, modifier = Modifier.size(24.dp))
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 4.dp)
-                            .size(width = 16.dp, height = 3.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(Amber)
+                    Icon(
+                        Icons.Filled.Home, 
+                        contentDescription = "Home", 
+                        tint = if (isHome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, 
+                        modifier = Modifier.size(24.dp)
                     )
+                    if (isHome) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .size(width = 16.dp, height = 3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                    }
                 }
 
                 // Mail
-                Icon(
-                    Icons.Outlined.MailOutline,
-                    contentDescription = "Messages",
-                    tint = NavIconInactive,
-                    modifier = Modifier.size(24.dp)
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .clickable { /* TODO */ }
+                ) {
+                    Icon(
+                        Icons.Outlined.MailOutline,
+                        contentDescription = "Messages",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
 
                 // Spacer for FAB
                 Spacer(modifier = Modifier.width(56.dp))
 
                 // Clock
-                Icon(
-                    Icons.Outlined.Alarm,
-                    contentDescription = "Clock",
-                    tint = NavIconInactive,
-                    modifier = Modifier.size(24.dp)
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .clickable { }
+                ) {
+                    Icon(
+                        Icons.Outlined.Alarm,
+                        contentDescription = "Clock",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
 
                 // Settings
-                Icon(
-                    Icons.Outlined.Settings,
-                    contentDescription = "Settings",
-                    tint = NavIconInactive,
-                    modifier = Modifier.size(24.dp)
-                )
+                val isSettings = currentRoute == "settings"
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .clickable { onSettingsClick() }
+                ) {
+                    Icon(
+                        if (isSettings) Icons.Filled.Settings else Icons.Outlined.Settings,
+                        contentDescription = "Settings",
+                        tint = if (isSettings) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    if (isSettings) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .size(width = 16.dp, height = 3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                    }
+                }
             }
         }
 
-        // FAB in center
         FloatingActionButton(
             onClick = onAddClick,
             modifier = Modifier
@@ -95,8 +147,8 @@ fun BottomNavBar(onAddClick: () -> Unit) {
                 .size(56.dp)
                 .shadow(8.dp, CircleShape),
             shape = CircleShape,
-            containerColor = Amber,
-            contentColor = White
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ) {
             Icon(
                 Icons.Default.Add,

@@ -141,3 +141,42 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!") {
         }
     }
 }
+
+@Composable
+fun Cards(number: Int, isError: Boolean = false, onCardClick: () -> Unit){
+    Card(
+        onClick = { onCardClick() },
+        shape = RoundedCornerShape(40.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f),
+        colors = CardDefaults.cardColors(
+            containerColor = if(!isError){
+                MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                MaterialTheme.colorScheme.error
+            }
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary)
+
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .size(30.dp)
+        ) {
+            Text(
+                text = number.toString(),
+                style = MaterialTheme.typography.displayMedium
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun Preview(){
+    AlarmScreen({})
+}

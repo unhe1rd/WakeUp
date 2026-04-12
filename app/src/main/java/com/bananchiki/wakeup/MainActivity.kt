@@ -12,6 +12,23 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import com.bananchiki.wakeup.data.preferences.ThemePreferenceManager
+import com.bananchiki.wakeup.data.preferences.ThemeSettings
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.bananchiki.wakeup.ui.components.AddAlarmDialog
+import com.bananchiki.wakeup.ui.components.BottomNavBar
 import com.bananchiki.wakeup.ui.home.HomeScreen
 import com.bananchiki.wakeup.ui.home.HomeViewModel
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
@@ -32,17 +49,81 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         checkAndRequestNotificationsPermission()
 
+        val themePreferenceManager = ThemePreferenceManager(applicationContext)
+
         setContent {
-            WakeUpTheme {
+            val themeSettings by themePreferenceManager.themeFlow.collectAsState(initial = ThemeSettings.SYSTEM)
+            val coroutineScope = rememberCoroutineScope()
+            
+            val useDarkTheme = when (themeSettings) {
+                ThemeSettings.LIGHT -> false
+                ThemeSettings.DARK -> true
+                ThemeSettings.SYSTEM -> isSystemInDarkTheme()
+            }
+
+            WakeUpTheme(darkTheme = useDarkTheme) {
                 val alarms by viewModel.allAlarms.collectAsState(initial = emptyList())
-                HomeScreen(
-                    alarms = alarms,
-                    onAddAlarm = { hour, minute, label, daysOfWeek ->
-                        viewModel.addAlarm(hour, minute, label, daysOfWeek)
-                    },
-                    onDeleteAlarm = { alarm -> viewModel.deleteAlarm(alarm) },
-                    onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) }
-                )
+                val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route ?: "home"
+                var showAddDialog by remember { mutableStateOf(false) }
+
+                Scaffold(
+                    bottomBar = {
+                        BottomNavBar(
+                            currentRoute = currentRoute,
+                            onAddClick = { showAddDialog = true },
+                            onHomeClick = {
+                                navController.navigate("home") {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            onSettingsClick = {
+                                navController.navigate("settings") {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
+                    }
+                ) { innerPadding ->
+                    NavHost(
+                        navController = navController, 
+                        startDestination = "home",
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable("home") {
+                            HomeScreen(
+                                alarms = alarms,
+                                onDeleteAlarm = { alarm -> viewModel.deleteAlarm(alarm) },
+                                onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) }
+                            )
+                        }
+                        composable("settings") {
+                            com.bananchiki.wakeup.ui.settings.SettingsScreen(
+                                currentTheme = themeSettings,
+                                onThemeSelected = { newTheme ->
+                                    coroutineScope.launch {
+                                        themePreferenceManager.saveTheme(newTheme)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                if (showAddDialog) {
+                    AddAlarmDialog(
+                        onDismiss = { showAddDialog = false },
+                        onConfirm = { hour, minute, label, days ->
+                            viewModel.addAlarm(hour, minute, label, days)
+                            showAddDialog = false
+                        }
+                    )
+                }
             }
         }
     }
