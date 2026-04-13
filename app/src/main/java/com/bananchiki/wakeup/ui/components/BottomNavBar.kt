@@ -9,9 +9,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.outlined.Alarm
-import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import com.bananchiki.wakeup.ui.theme.*
 fun BottomNavBar(
     currentRoute: String = "home",
     onAddClick: () -> Unit,
+    onProgressClick: () -> Unit = {},
     onSettingsClick: () -> Unit,
     onHomeClick: () -> Unit = {}
 ) {
@@ -76,20 +78,31 @@ fun BottomNavBar(
                     }
                 }
 
-                // Mail
+                // Progress
+                val isProgress = currentRoute == "progress"
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .clickable { /* TODO */ }
+                        .clickable { onProgressClick() }
                 ) {
                     Icon(
-                        Icons.Outlined.MailOutline,
-                        contentDescription = "Messages",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        if (isProgress) Icons.Filled.Timeline else Icons.Outlined.Timeline,
+                        contentDescription = "Progress",
+                        tint = if (isProgress) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
+                    if (isProgress) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .size(width = 16.dp, height = 3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                    }
                 }
 
                 // Spacer for FAB
@@ -101,7 +114,7 @@ fun BottomNavBar(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .clickable { /* TODO */ }
+                        .clickable { }
                 ) {
                     Icon(
                         Icons.Outlined.Alarm,
@@ -140,7 +153,6 @@ fun BottomNavBar(
             }
         }
 
-        // FAB in center
         FloatingActionButton(
             onClick = onAddClick,
             modifier = Modifier

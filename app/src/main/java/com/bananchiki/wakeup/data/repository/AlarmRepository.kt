@@ -53,7 +53,7 @@ class AlarmRepository(
                     add(Calendar.DAY_OF_YEAR, 1)
                 }
             }
-            setExactAlarm(alarmManager, alarm.id * 10, calendar.timeInMillis, alarm.id)
+            setExactAlarm(alarmManager, alarm.id * 10, calendar.timeInMillis, alarm)
         } else {
             // Repeating for specific days
             for (dayIndex in activeDays) {
@@ -69,7 +69,7 @@ class AlarmRepository(
                     }
                 }
                 val requestCode = alarm.id * 10 + dayIndex
-                setExactAlarm(alarmManager, requestCode, calendar.timeInMillis, alarm.id)
+                setExactAlarm(alarmManager, requestCode, calendar.timeInMillis, alarm)
             }
         }
     }
@@ -94,10 +94,12 @@ class AlarmRepository(
         alarmManager: AlarmManager,
         requestCode: Int,
         triggerAtMillis: Long,
-        alarmId: Int
+        alarm: Alarm
     ) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("alarm_id", alarmId)
+            putExtra("alarm_id", alarm.id)
+            putExtra("task_type", alarm.taskType)
+            putExtra("alarm_label", alarm.label)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,

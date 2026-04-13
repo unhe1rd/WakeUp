@@ -31,6 +31,7 @@ import com.bananchiki.wakeup.ui.components.AddAlarmDialog
 import com.bananchiki.wakeup.ui.components.BottomNavBar
 import com.bananchiki.wakeup.ui.home.HomeScreen
 import com.bananchiki.wakeup.ui.home.HomeViewModel
+import com.bananchiki.wakeup.ui.progress.ProgressScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 
 class MainActivity : ComponentActivity() {
@@ -67,12 +68,23 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: "home"
                 var showAddDialog by remember { mutableStateOf(false) }
+                var alarmBeingEdited by remember { mutableStateOf<com.bananchiki.wakeup.data.model.Alarm?>(null) }
 
                 Scaffold(
                     bottomBar = {
                         BottomNavBar(
                             currentRoute = currentRoute,
-                            onAddClick = { showAddDialog = true },
+                            onAddClick = { 
+                                alarmBeingEdited = null
+                                showAddDialog = true 
+                            },
+                            onProgressClick = {
+                                navController.navigate("progress") {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
                             onHomeClick = {
                                 navController.navigate("home") {
                                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -99,8 +111,15 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 alarms = alarms,
                                 onDeleteAlarm = { alarm -> viewModel.deleteAlarm(alarm) },
-                                onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) }
+                                onToggleAlarm = { alarm, isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) },
+                                onEditAlarm = { alarm ->
+                                    alarmBeingEdited = alarm
+                                    showAddDialog = true
+                                }
                             )
+                        }
+                        composable("progress") {
+                            ProgressScreen()
                         }
                         composable("settings") {
                             com.bananchiki.wakeup.ui.settings.SettingsScreen(
@@ -117,10 +136,19 @@ class MainActivity : ComponentActivity() {
 
                 if (showAddDialog) {
                     AddAlarmDialog(
-                        onDismiss = { showAddDialog = false },
-                        onConfirm = { hour, minute, label, days ->
-                            viewModel.addAlarm(hour, minute, label, days)
+                        alarmToEdit = alarmBeingEdited,
+                        onDismiss = { 
                             showAddDialog = false
+                            alarmBeingEdited = null
+                        },
+                        onConfirm = { hour, minute, label, days, taskType ->
+                            if (alarmBeingEdited != null) {
+                                viewModel.editAlarm(alarmBeingEdited!!, hour, minute, label, days, taskType)
+                            } else {
+                                viewModel.addAlarm(hour, minute, label, days, taskType)
+                            }
+                            showAddDialog = false
+                            alarmBeingEdited = null
                         }
                     )
                 }

@@ -32,6 +32,7 @@ fun AlarmCardGrid(
     alarms: List<Alarm>,
     onToggleAlarm: (Alarm, Boolean) -> Unit,
     onDeleteAlarm: (Alarm) -> Unit,
+    onEditAlarm: (Alarm) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (alarms.isEmpty()) {
@@ -66,7 +67,8 @@ fun AlarmCardGrid(
                 AlarmCard(
                     alarm = alarm,
                     onToggle = { isEnabled -> onToggleAlarm(alarm, isEnabled) },
-                    onDelete = { onDeleteAlarm(alarm) }
+                    onDelete = { onDeleteAlarm(alarm) },
+                    onEdit = { onEditAlarm(alarm) }
                 )
             }
         }
@@ -77,7 +79,8 @@ fun AlarmCardGrid(
 fun AlarmCard(
     alarm: Alarm,
     onToggle: (Boolean) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val borderColor by animateColorAsState(
@@ -90,6 +93,7 @@ fun AlarmCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onEdit() }
             .border(
                 width = 1.5.dp,
                 color = borderColor,
@@ -131,6 +135,13 @@ fun AlarmCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            onClick = {
+                                showMenu = false
+                                onEdit()
+                            }
+                        )
                         DropdownMenuItem(
                             text = { Text("Delete") },
                             onClick = {
