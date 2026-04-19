@@ -3,6 +3,7 @@ package com.bananchiki.wakeup.data.preferences
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -30,3 +31,20 @@ class ThemePreferenceManager(private val context: Context) {
         }
     }
 }
+
+class OnboardingPreferenceManager(private val context: Context) {
+
+    private val onboardingKey = booleanPreferencesKey("onboarding_setting")
+
+    val onboardingFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[onboardingKey] ?: true
+    }
+
+    suspend fun saveOnboarding(){
+        context.dataStore.edit { preferences ->
+            preferences[onboardingKey] = false
+        }
+    }
+
+}
+
