@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import com.bananchiki.wakeup.data.model.Alarm
 import com.bananchiki.wakeup.ui.components.*
 import androidx.compose.material3.MaterialTheme
+import com.bananchiki.wakeup.ui.goals.AchievementsScreen
 
 @Composable
 fun HomeScreen(
