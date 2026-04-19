@@ -1,9 +1,12 @@
 package com.bananchiki.wakeup
 
 import android.Manifest
+import android.app.NotificationManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,10 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.bananchiki.wakeup.data.preferences.OnboardingPreferenceManager
 import com.bananchiki.wakeup.ui.components.AddAlarmDialog
 import com.bananchiki.wakeup.ui.components.BottomNavBar
 import com.bananchiki.wakeup.ui.home.HomeScreen
 import com.bananchiki.wakeup.ui.home.HomeViewModel
+import com.bananchiki.wakeup.ui.onboarding.OnboardingScreen
 import com.bananchiki.wakeup.ui.progress.ProgressScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 
@@ -38,22 +43,25 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: HomeViewModel by viewModels()
 
-    private val requestPermissionLauncher = registerForActivityResult(
+    /*private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (!isGranted) {
             Toast.makeText(this, "Permission denied. Alarm won't show!", Toast.LENGTH_LONG).show()
         }
-    }
+    } */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkAndRequestNotificationsPermission()
 
         val themePreferenceManager = ThemePreferenceManager(applicationContext)
+        val onboardingPreferenceManager = OnboardingPreferenceManager(applicationContext)
+
 
         setContent {
             val themeSettings by themePreferenceManager.themeFlow.collectAsState(initial = ThemeSettings.SYSTEM)
+            val isFirstLaunch by onboardingPreferenceManager.onboardingFlow.collectAsState(true)
+
             val coroutineScope = rememberCoroutineScope()
             
             val useDarkTheme = when (themeSettings) {
@@ -72,39 +80,44 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     bottomBar = {
-                        BottomNavBar(
-                            currentRoute = currentRoute,
-                            onAddClick = { 
-                                alarmBeingEdited = null
-                                showAddDialog = true 
-                            },
-                            onProgressClick = {
-                                navController.navigate("progress") {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
+                        if(currentRoute != "onboarding") {
+                            BottomNavBar(
+                                currentRoute = currentRoute,
+                                onAddClick = {
+                                    alarmBeingEdited = null
+                                    showAddDialog = true
+                                },
+                                onProgressClick = {
+                                    navController.navigate("progress") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                onHomeClick = {
+                                    navController.navigate("home") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                onSettingsClick = {
+                                    navController.navigate("settings") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
-                            },
-                            onHomeClick = {
-                                navController.navigate("home") {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            onSettingsClick = {
-                                navController.navigate("settings") {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        )
+                            )
+                        }
                     }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController, 
-                        startDestination = "home",
+                        startDestination = if (isFirstLaunch){
+                            "onboarding"
+                        } else
+                            "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("home") {
@@ -127,6 +140,22 @@ class MainActivity : ComponentActivity() {
                                 onThemeSelected = { newTheme ->
                                     coroutineScope.launch {
                                         themePreferenceManager.saveTheme(newTheme)
+                                    }
+                                }
+                            )
+                        }
+                        composable("onboarding"){
+                            OnboardingScreen(
+                                onFinish = {
+                                    navController.navigate("home"){
+                                        popUpTo("onboarding"){
+                                            inclusive = true
+                                        }
+                                    }
+                                },
+                                onSaveOnboarding = {
+                                    coroutineScope.launch {
+                                        onboardingPreferenceManager.saveOnboarding()
                                     }
                                 }
                             )
@@ -156,7 +185,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkAndRequestNotificationsPermission() {
+    /*private fun checkAndRequestNotificationsPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -167,4 +196,16 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun checkAndRequestFullScreenPermission(){
+        val notificationManager = this.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (!notificationManager.canUseFullScreenIntent()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                    data = android.net.Uri.parse("package:${packageName}")
+                }
+                this.startActivity(intent)
+            }
+        }
+    } */
 }
