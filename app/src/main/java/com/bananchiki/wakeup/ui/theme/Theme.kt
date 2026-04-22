@@ -34,20 +34,31 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = AmberLight,
-    onPrimary = DarkText,
-    primaryContainer = Color(0xFF3E2723),
-    onPrimaryContainer = AmberLight,
-    secondary = Amber,
-    onSecondary = DarkText,
-    background = Color(0xFF121212),
-    onBackground = White,
-    surface = Color(0xFF1E1E1E),
-    onSurface = White,
-    surfaceVariant = Color(0xFF2C2C2C),
-    onSurfaceVariant = GrayLight,
-    outline = GrayMedium,
-    outlineVariant = AmberDark
+    primary = Color(0xFFD4A574),
+    onPrimary = Color(0xFF2C1810),
+
+    primaryContainer = Color(0xFF4A3020),
+    onPrimaryContainer = Color(0xFFE8CDB5),
+    secondary = Color(0xFFC49A6C),
+    onSecondary = Color(0xFF2C1810),
+    secondaryContainer = Color(0xFF5D4030),
+    onSecondaryContainer = Color(0xFFD4B89A),
+    tertiary = Color(0xFFB8865A),
+    onTertiary = Color(0xFF2C1810),
+    tertiaryContainer = Color(0xFF6B4A35),
+    onTertiaryContainer = Color(0xFFC9A889),
+    background = Color(0xFF1A1410),
+    onBackground = Color(0xFFEDE0D4),
+    surface = Color(0xFF241C16),
+    onSurface = Color(0xFFEDE0D4),
+    surfaceVariant = Color(0xFF2E241C),
+    onSurfaceVariant = Color(0xFFC4A891),
+    outline = Color(0xFF6B5242),
+    outlineVariant = Color(0xFF3D2B20),
+    error = Color(0xFFD47A7A),
+    onError = Color(0xFF2C1810),
+    errorContainer = Color(0xFF4A2A2A),
+    onErrorContainer = Color(0xFFE8C5C5)
 )
 
 @Composable

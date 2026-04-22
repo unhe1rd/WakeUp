@@ -7,21 +7,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bananchiki.wakeup.ui.theme.DarkText
-import com.bananchiki.wakeup.ui.theme.GrayText
 import java.util.Calendar
 
 @Composable
 fun GreetingHeader() {
-    val greeting = remember {
+    val (greeting, emoji) = remember {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         when {
-            hour < 6 -> "Good Night"
-            hour < 12 -> "Good Morning"
-            hour < 18 -> "Good Afternoon"
-            else -> "Good Evening"
+            hour < 6 -> "Good Night" to "🌙"
+            hour < 12 -> "Good Morning" to "☀️"
+            hour < 18 -> "Good Afternoon" to "🌤️"
+            else -> "Good Evening" to "🌆"
         }
     }
 
@@ -34,22 +33,23 @@ fun GreetingHeader() {
             Text(
                 text = greeting,
                 style = MaterialTheme.typography.bodyMedium,
-                color = GrayText
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "☀️", fontSize = 18.sp)
+            Text(text = emoji, fontSize = 18.sp)
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Mikhail Ulanov",
             style = MaterialTheme.typography.headlineLarge,
-            color = DarkText
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = "Let's build your habits",
             style = MaterialTheme.typography.bodyMedium,
-            color = GrayText
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
     }
 }
