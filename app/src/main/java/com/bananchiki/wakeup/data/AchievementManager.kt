@@ -1,6 +1,5 @@
 package com.bananchiki.wakeup.data
 
-
 import android.content.Context
 import android.content.SharedPreferences
 import java.text.SimpleDateFormat

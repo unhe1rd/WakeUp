@@ -13,12 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.bananchiki.wakeup.ui.theme.DarkText
-import com.bananchiki.wakeup.ui.theme.GrayMedium
-import com.bananchiki.wakeup.ui.theme.White
 
 @Composable
 fun AlarmGoalsTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
@@ -28,14 +24,17 @@ fun AlarmGoalsTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
         modifier = Modifier
             .padding(horizontal = 60.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFF0F0F0))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(4.dp),
         horizontalArrangement = Arrangement.Center
     ) {
         tabs.forEachIndexed { index, title ->
             val isSelected = index == selectedTab
             val bgColor by animateColorAsState(
-                targetValue = if (isSelected) White else Color.Transparent,
+                targetValue = if (isSelected)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant,
                 animationSpec = tween(200),
                 label = "tabBg"
             )
@@ -53,7 +52,10 @@ fun AlarmGoalsTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
                     text = title,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) DarkText else GrayMedium
+                    color = if (isSelected)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

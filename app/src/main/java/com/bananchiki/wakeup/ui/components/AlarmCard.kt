@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bananchiki.wakeup.data.model.Alarm
-import com.bananchiki.wakeup.ui.theme.*
 
 @Composable
 fun AlarmCardGrid(
@@ -46,13 +45,13 @@ fun AlarmCardGrid(
                 Text(
                     text = "No alarms yet",
                     style = MaterialTheme.typography.titleMedium,
-                    color = GrayMedium
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Tap + to add your first alarm",
                     style = MaterialTheme.typography.bodySmall,
-                    color = GrayLight
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
         }
@@ -84,7 +83,10 @@ fun AlarmCard(
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val borderColor by animateColorAsState(
-        targetValue = if (alarm.isEnabled) AmberBorder else Color(0xFFE8E8E8),
+        targetValue = if (alarm.isEnabled)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.outline,
         animationSpec = tween(300),
         label = "border"
     )
@@ -100,7 +102,7 @@ fun AlarmCard(
                 shape = RoundedCornerShape(16.dp)
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -108,7 +110,6 @@ fun AlarmCard(
                 .fillMaxWidth()
                 .padding(14.dp)
         ) {
-            // Top row: label + menu
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -117,7 +118,10 @@ fun AlarmCard(
                 Text(
                     text = alarm.label,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (alarm.isEnabled) DarkSubtext else GrayMedium,
+                    color = if (alarm.isEnabled)
+                        MaterialTheme.colorScheme.onSurface
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -129,7 +133,7 @@ fun AlarmCard(
                         modifier = Modifier
                             .size(20.dp)
                             .clickable { showMenu = true },
-                        tint = GrayMedium
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     DropdownMenu(
                         expanded = showMenu,
@@ -155,12 +159,11 @@ fun AlarmCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Time
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = alarm.timeFormatted12,
                     style = MaterialTheme.typography.displayMedium.copy(
-                        color = DarkText.copy(alpha = textAlpha),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = textAlpha),
                         letterSpacing = (-1).sp
                     )
                 )
@@ -169,7 +172,7 @@ fun AlarmCard(
                     text = alarm.amPmLabel,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = FontWeight.Medium,
-                        color = DarkText.copy(alpha = textAlpha)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = textAlpha)
                     ),
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
@@ -177,12 +180,10 @@ fun AlarmCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Days of week
             DaysOfWeekRow(alarm = alarm)
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Bottom row: icon + toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -192,16 +193,19 @@ fun AlarmCard(
                     Icons.Outlined.Alarm,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
-                    tint = if (alarm.isEnabled) Amber else GrayLight
+                    tint = if (alarm.isEnabled)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.outline
                 )
                 Switch(
                     checked = alarm.isEnabled,
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = White,
-                        checkedTrackColor = ToggleOn,
-                        uncheckedThumbColor = White,
-                        uncheckedTrackColor = ToggleTrack,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                         uncheckedBorderColor = Color.Transparent,
                         checkedBorderColor = Color.Transparent
                     ),
@@ -227,7 +231,10 @@ private fun DaysOfWeekRow(alarm: Alarm) {
                     text = letter,
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontSize = 9.sp,
-                        color = if (isActive) Amber else GrayLight,
+                        color = if (isActive)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.outline,
                         fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
                     )
                 )
@@ -236,7 +243,12 @@ private fun DaysOfWeekRow(alarm: Alarm) {
                         .padding(top = 2.dp)
                         .size(4.dp)
                         .clip(CircleShape)
-                        .background(if (isActive) Amber else Color.Transparent)
+                        .background(
+                            if (isActive)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                Color.Transparent
+                        )
                 )
             }
         }
