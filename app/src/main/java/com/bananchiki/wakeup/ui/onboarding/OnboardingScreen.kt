@@ -1,8 +1,11 @@
 package com.bananchiki.wakeup.ui.onboarding
 
 import android.Manifest
+import android.app.NotificationManager
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,9 +27,11 @@ import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
@@ -34,12 +39,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.bananchiki.wakeup.data.preferences.OnboardingPreferenceManager
 import kotlinx.coroutines.launch
 
 @Composable
-fun OnboardingScreen(onFinish: () -> Unit, onSaveOnboarding: () -> Unit) {
+fun OnboardingScreen(onSaveAndFinishOnboarding: () -> Unit) {
     val context = LocalContext.current
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val coroutineScope = rememberCoroutineScope()
+    val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -47,6 +56,26 @@ fun OnboardingScreen(onFinish: () -> Unit, onSaveOnboarding: () -> Unit) {
         if (!isSuccess) {
             Toast.makeText(context, "Permission denied. Alarm won't show!", Toast.LENGTH_LONG)
                 .show()
+        } else {
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+            }
+        }
+    }
+
+    val fullScreenIntentPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE){
+            if (notificationManager.canUseFullScreenIntent()){
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+            }
+        } else {
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+            }
         }
     }
 
@@ -54,12 +83,12 @@ fun OnboardingScreen(onFinish: () -> Unit, onSaveOnboarding: () -> Unit) {
         data = Uri.parse("package:${context.packageName}")
     }
 
-    val pagerState = rememberPagerState(pageCount = { 3 })
 
     Column() {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            userScrollEnabled = false
         ) { page ->
             when (page) {
                 0 -> OnboardingPage(
@@ -74,7 +103,7 @@ fun OnboardingScreen(onFinish: () -> Unit, onSaveOnboarding: () -> Unit) {
                     title = "Для правильной работы будильника необходимо перейти в настройки и разрешить показ уведомлений во весь экран",
                     buttonText = "Перейти в настройки",
                     onButtonClick = {
-                        context.startActivity(intent)
+                        fullScreenIntentPermissionLauncher.launch(intent)
                     }
                 )
 
@@ -82,8 +111,7 @@ fun OnboardingScreen(onFinish: () -> Unit, onSaveOnboarding: () -> Unit) {
                     title = "Теперь всё должно работать как надо!",
                     buttonText = "Готово",
                     onButtonClick = {
-                        onSaveOnboarding()
-                        onFinish()
+                        onSaveAndFinishOnboarding()
                     }
                 )
             }
@@ -120,18 +148,29 @@ fun OnboardingPage(title: String, buttonText: String, onButtonClick: () -> Unit)
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.weight(1f))
         Text(
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
-            text = title
+            text = title,
+            fontSize = 25.sp,
+            color = MaterialTheme.colorScheme.onSurface
         )
+        Spacer(Modifier.weight(1f))
         Button(
-            onClick = { onButtonClick() }
+            onClick = { onButtonClick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp)
+                .size(50.dp),
+            shape = RoundedCornerShape(10.dp)
         ) {
-            Text(buttonText)
+            Text(
+                fontSize = 20.sp,
+                text = buttonText
+            )
         }
     }
 }
@@ -139,5 +178,5 @@ fun OnboardingPage(title: String, buttonText: String, onButtonClick: () -> Unit)
 @Preview
 @Composable
 fun Prew() {
-    OnboardingScreen({}, {})
+    OnboardingScreen({})
 }

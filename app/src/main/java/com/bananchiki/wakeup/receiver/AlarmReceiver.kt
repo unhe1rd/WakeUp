@@ -51,6 +51,8 @@ class AlarmReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(1, notification)
+        val alarmId = intent.getIntExtra("alarm_id", 0)
+
+        notificationManager.notify(alarmId, notification)
     }
 }

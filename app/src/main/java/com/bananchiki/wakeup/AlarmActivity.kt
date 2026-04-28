@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,10 +30,13 @@ class AlarmActivity : ComponentActivity() {
             @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
             )
         }
+
+        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+
+        volumeControlStream = android.media.AudioManager.STREAM_ALARM
 
         startAlarmEffects()
 
@@ -55,6 +59,16 @@ class AlarmActivity : ComponentActivity() {
         val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
         ringtone = RingtoneManager.getRingtone(this, alarmUri)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ringtone?.audioAttributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                .build()
+        } else {
+            @Suppress("DEPRECATION")
+            ringtone?.streamType = android.media.AudioManager.STREAM_ALARM
+        }
+
         ringtone?.play()
 
         // Vibration
@@ -74,9 +88,21 @@ class AlarmActivity : ComponentActivity() {
         }
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
     private fun dismissAlarm() {
         ringtone?.stop()
         vibrator?.cancel()
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+        val alarmId = intent.getIntExtra("alarm_id", 0)
+        notificationManager.cancel(alarmId)
+
         finish()
     }
 

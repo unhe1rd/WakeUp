@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import com.bananchiki.wakeup.billing.BillingManager
 import com.bananchiki.wakeup.billing.PremiumManager
 import com.bananchiki.wakeup.billing.SubscriptionState
+import androidx.compose.runtime.LaunchedEffect
 import com.bananchiki.wakeup.data.preferences.ThemePreferenceManager
 import com.bananchiki.wakeup.data.preferences.ThemeSettings
 import kotlinx.coroutines.launch
@@ -68,9 +69,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeSettings by themePreferenceManager.themeFlow.collectAsState(initial = ThemeSettings.SYSTEM)
-            val isFirstLaunch by onboardingPreferenceManager.onboardingFlow.collectAsState(true)
             val isPremium by premiumManager.isPremiumFlow.collectAsState(initial = false)
             val subscriptionState by billingManager.subscriptionState.collectAsState()
+            val isFirstLaunch by onboardingPreferenceManager.onboardingFlow.collectAsState(false)
 
             // Sync billing state with premium manager
             val coroutineScope = rememberCoroutineScope()
@@ -96,6 +97,16 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route ?: "home"
                 var showAddDialog by remember { mutableStateOf(false) }
                 var alarmBeingEdited by remember { mutableStateOf<com.bananchiki.wakeup.data.model.Alarm?>(null) }
+
+                LaunchedEffect(isFirstLaunch) {
+                    if (isFirstLaunch){
+                        navController.navigate("onboarding"){
+                            popUpTo("home"){
+                                inclusive = true
+                            }
+                        }
+                    }
+                }
 
                 Scaffold(
                     bottomBar = {
@@ -133,10 +144,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController, 
-                        startDestination = if (isFirstLaunch){
-                            "onboarding"
-                        } else
-                            "home",
+                        startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("home") {
@@ -184,16 +192,14 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("onboarding"){
                             OnboardingScreen(
-                                onFinish = {
-                                    navController.navigate("home"){
-                                        popUpTo("onboarding"){
-                                            inclusive = true
-                                        }
-                                    }
-                                },
-                                onSaveOnboarding = {
+                                onSaveAndFinishOnboarding = {
                                     coroutineScope.launch {
                                         onboardingPreferenceManager.saveOnboarding()
+                                        navController.navigate("home"){
+                                            popUpTo("onboarding"){
+                                                inclusive = true
+                                            }
+                                        }
                                     }
                                 }
                             )
