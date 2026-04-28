@@ -13,7 +13,10 @@ import androidx.compose.ui.unit.sp
 import java.util.Calendar
 
 @Composable
-fun GreetingHeader() {
+fun GreetingHeader(
+    isPremium: Boolean = false,
+    onProClick: () -> Unit = {}
+) {
     val (greeting, emoji) = remember {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         when {
@@ -29,14 +32,21 @@ fun GreetingHeader() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = greeting,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(text = emoji, fontSize = 18.sp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = greeting,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = emoji, fontSize = 18.sp)
+            }
+            ProBadge(isPremium = isPremium, onClick = onProClick)
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
