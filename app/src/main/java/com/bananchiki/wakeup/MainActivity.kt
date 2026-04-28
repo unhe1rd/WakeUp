@@ -22,6 +22,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import com.bananchiki.wakeup.billing.BillingManager
+import com.bananchiki.wakeup.billing.PremiumManager
+import com.bananchiki.wakeup.billing.SubscriptionState
 import androidx.compose.runtime.LaunchedEffect
 import com.bananchiki.wakeup.data.preferences.ThemePreferenceManager
 import com.bananchiki.wakeup.data.preferences.ThemeSettings
@@ -37,12 +40,15 @@ import com.bananchiki.wakeup.ui.components.BottomNavBar
 import com.bananchiki.wakeup.ui.home.HomeScreen
 import com.bananchiki.wakeup.ui.home.HomeViewModel
 import com.bananchiki.wakeup.ui.onboarding.OnboardingScreen
+import com.bananchiki.wakeup.ui.paywall.PaywallScreen
 import com.bananchiki.wakeup.ui.progress.ProgressScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: HomeViewModel by viewModels()
+    private lateinit var billingManager: BillingManager
+    private lateinit var premiumManager: PremiumManager
 
     /*private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -57,13 +63,26 @@ class MainActivity : ComponentActivity() {
 
         val themePreferenceManager = ThemePreferenceManager(applicationContext)
         val onboardingPreferenceManager = OnboardingPreferenceManager(applicationContext)
-
+        premiumManager = PremiumManager(applicationContext)
+        billingManager = BillingManager(applicationContext, premiumManager)
+        billingManager.startConnection()
 
         setContent {
             val themeSettings by themePreferenceManager.themeFlow.collectAsState(initial = ThemeSettings.SYSTEM)
+            val isPremium by premiumManager.isPremiumFlow.collectAsState(initial = false)
+            val subscriptionState by billingManager.subscriptionState.collectAsState()
             val isFirstLaunch by onboardingPreferenceManager.onboardingFlow.collectAsState(false)
 
+            // Sync billing state with premium manager
             val coroutineScope = rememberCoroutineScope()
+            
+            androidx.compose.runtime.LaunchedEffect(subscriptionState) {
+                when (subscriptionState) {
+                    SubscriptionState.PURCHASED -> premiumManager.updatePremiumStatus(true)
+                    SubscriptionState.NOT_PURCHASED -> premiumManager.updatePremiumStatus(false)
+                    else -> { /* PENDING or ERROR — keep current state */ }
+                }
+            }
             
             val useDarkTheme = when (themeSettings) {
                 ThemeSettings.LIGHT -> false
@@ -91,7 +110,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     bottomBar = {
-                        if(currentRoute != "onboarding") {
+                        if(currentRoute != "onboarding" && currentRoute != "paywall") {
                             BottomNavBar(
                                 currentRoute = currentRoute,
                                 onAddClick = {
@@ -136,11 +155,24 @@ class MainActivity : ComponentActivity() {
                                 onEditAlarm = { alarm ->
                                     alarmBeingEdited = alarm
                                     showAddDialog = true
+                                },
+                                isPremium = isPremium,
+                                onProClick = {
+                                    navController.navigate("paywall") {
+                                        launchSingleTop = true
+                                    }
                                 }
                             )
                         }
                         composable("progress") {
-                            ProgressScreen()
+                            ProgressScreen(
+                                isPremium = isPremium,
+                                onProClick = {
+                                    navController.navigate("paywall") {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
                         }
                         composable("settings") {
                             com.bananchiki.wakeup.ui.settings.SettingsScreen(
@@ -148,6 +180,12 @@ class MainActivity : ComponentActivity() {
                                 onThemeSelected = { newTheme ->
                                     coroutineScope.launch {
                                         themePreferenceManager.saveTheme(newTheme)
+                                    }
+                                },
+                                isPremium = isPremium,
+                                onProClick = {
+                                    navController.navigate("paywall") {
+                                        launchSingleTop = true
                                     }
                                 }
                             )
@@ -163,6 +201,30 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
                                     }
+                                }
+                            )
+                        }
+                        composable("paywall") {
+                            val isMock by billingManager.useMockBilling.collectAsState()
+                            PaywallScreen(
+                                onDismiss = { navController.popBackStack() },
+                                onMonthlyClick = {
+                                    billingManager.monthlyDetails.value?.let { details ->
+                                        billingManager.launchPurchaseFlow(this@MainActivity, details)
+                                    }
+                                },
+                                onYearlyClick = {
+                                    billingManager.yearlyDetails.value?.let { details ->
+                                        billingManager.launchPurchaseFlow(this@MainActivity, details)
+                                    }
+                                },
+                                onRestoreClick = {
+                                    billingManager.restorePurchases()
+                                },
+                                isMockBilling = isMock,
+                                onMockPurchase = {
+                                    billingManager.debugSimulatePurchase()
+                                    navController.popBackStack()
                                 }
                             )
                         }
@@ -188,6 +250,13 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::billingManager.isInitialized) {
+            billingManager.endConnection()
         }
     }
 

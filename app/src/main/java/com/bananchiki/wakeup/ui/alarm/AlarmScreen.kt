@@ -22,7 +22,7 @@ import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: String = "NONE") {
+fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: String) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance().time) }
 
     LaunchedEffect(Unit) {
@@ -38,13 +38,12 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
     val timeString = timeFormat.format(currentTime)
     val dateString = dateFormat.format(currentTime)
 
-    // Beautiful soft gradient matching the design
     val backgroundBrush = Brush.linearGradient(
         colors = listOf(
-            Color(0xFFFF8C7A), // Soft coral / peach
-            Color(0xFFD889E6), // Light purple / magenta
-            Color(0xFFE5F0FF), // Pale light blue
-            Color(0xFFFFFFFF)  // White
+            Color(0xFFFF8C7A),
+            Color(0xFFD889E6),
+            Color(0xFFE5F0FF),
+            Color(0xFFFFFFFF)
         ),
         start = Offset(0f, 0f),
         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
@@ -63,7 +62,6 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Weather Icon (using emoji here for simplicity)
             Text(
                 text = "⛅",
                 fontSize = 72.sp
@@ -71,7 +69,6 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Date
             Text(
                 text = dateString,
                 color = Color.White.copy(alpha = 0.9f),
@@ -82,7 +79,6 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Large Time
             Text(
                 text = timeString,
                 color = Color.White,
@@ -91,60 +87,51 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
                 letterSpacing = (-2).sp
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // Alarm Label
             Text(
                 text = label,
                 color = Color(0xFF333333),
-                fontSize = 32.sp,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.ExtraBold
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            if (taskType == "NONE") {
-                // Snooze Button
-                Button(
-                    onClick = { /* Snooze could just dismiss for now */ onDismiss() },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black.copy(alpha = 0.25f),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(bottom = 64.dp)
-                ) {
-                    Text(
-                        text = "Snooze",
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                    )
-                }
-
-                // Dismiss Button
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Amber,
-                        contentColor = Color(0xFF1A1A1A) // Dark text on amber
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                ) {
-                    Text(
-                        text = "Dismiss",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            } else if (taskType == "MATH") {
-                MathTaskScreen(onComplete = onDismiss)
-            } else if (taskType == "MEMORY") {
-                MemoryTaskScreen(onComplete = onDismiss)
+            Button(
+                onClick = { /* Snooze could just dismiss for now */ onDismiss() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black.copy(alpha = 0.25f),
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(bottom = 64.dp)
+            ) {
+                Text(
+                    text = "Snooze",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
             }
-            
+
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Amber,
+                    contentColor = Color(0xFF1A1A1A) // Dark text on amber
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+            ) {
+                Text(
+                    text = "Dismiss",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -183,8 +170,3 @@ fun Cards(number: Int, isError: Boolean = false, onCardClick: () -> Unit){
     }
 }
 
-@Preview
-@Composable
-fun Preview(){
-    AlarmScreen({})
-}
