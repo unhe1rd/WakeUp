@@ -8,13 +8,16 @@ import androidx.compose.ui.unit.dp
 import com.bananchiki.wakeup.data.model.Alarm
 import com.bananchiki.wakeup.ui.components.*
 import androidx.compose.material3.MaterialTheme
+import com.bananchiki.wakeup.ui.goals.AchievementsScreen
 
 @Composable
 fun HomeScreen(
     alarms: List<Alarm>,
     onDeleteAlarm: (Alarm) -> Unit,
     onToggleAlarm: (Alarm, Boolean) -> Unit,
-    onEditAlarm: (Alarm) -> Unit
+    onEditAlarm: (Alarm) -> Unit,
+    isPremium: Boolean = false,
+    onProClick: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -26,7 +29,10 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            GreetingHeader()
+            GreetingHeader(
+                isPremium = isPremium,
+                onProClick = onProClick
+            )
             Spacer(modifier = Modifier.height(8.dp))
             WeekCalendarStrip()
             Spacer(modifier = Modifier.height(16.dp))
@@ -35,16 +41,35 @@ fun HomeScreen(
                 onTabSelected = { selectedTab = it }
             )
             Spacer(modifier = Modifier.height(16.dp))
-            AlarmCardGrid(
-                alarms = alarms,
-                onToggleAlarm = onToggleAlarm,
-                onDeleteAlarm = onDeleteAlarm,
-                onEditAlarm = onEditAlarm,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
-            )
+
+            when (selectedTab) {
+                0 -> {
+                    // Alarms tab
+                    AlarmCardGrid(
+                        alarms = alarms,
+                        onToggleAlarm = onToggleAlarm,
+                        onDeleteAlarm = onDeleteAlarm,
+                        onEditAlarm = onEditAlarm,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+                1 -> {
+                    // Goals tab -> Achievements
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        AchievementsScreen(
+                            isPremium = isPremium,
+                            onProClick = onProClick
+                        )
+                    }
+                }
+            }
         }
     }
 }
