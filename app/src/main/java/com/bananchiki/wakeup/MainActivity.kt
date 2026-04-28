@@ -199,6 +199,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("paywall") {
+                            val isMock by billingManager.useMockBilling.collectAsState()
                             PaywallScreen(
                                 onDismiss = { navController.popBackStack() },
                                 onMonthlyClick = {
@@ -213,6 +214,11 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onRestoreClick = {
                                     billingManager.restorePurchases()
+                                },
+                                isMockBilling = isMock,
+                                onMockPurchase = {
+                                    billingManager.debugSimulatePurchase()
+                                    navController.popBackStack()
                                 }
                             )
                         }

@@ -35,9 +35,12 @@ fun PaywallScreen(
     onYearlyClick: () -> Unit,
     onRestoreClick: () -> Unit,
     monthlyPrice: String = "149 ₽/мес",
-    yearlyPrice: String = "999 ₽/год"
+    yearlyPrice: String = "999 ₽/год",
+    isMockBilling: Boolean = false,
+    onMockPurchase: () -> Unit = {}
 ) {
     var selectedPlan by remember { mutableStateOf("yearly") }
+    var showMockDialog by remember { mutableStateOf(false) }
 
     val infiniteTransition = rememberInfiniteTransition(label = "starPulse")
     val starScale by infiniteTransition.animateFloat(
@@ -194,8 +197,12 @@ fun PaywallScreen(
             // CTA button
             Button(
                 onClick = {
-                    if (selectedPlan == "monthly") onMonthlyClick()
-                    else onYearlyClick()
+                    if (isMockBilling) {
+                        showMockDialog = true
+                    } else {
+                        if (selectedPlan == "monthly") onMonthlyClick()
+                        else onYearlyClick()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -255,6 +262,41 @@ fun PaywallScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    // 🐛 DEBUG: Mock payment dialog (shown when Play Store is unavailable)
+    if (showMockDialog) {
+        val planLabel = if (selectedPlan == "monthly") "Месяц — $monthlyPrice" else "Год — $yearlyPrice"
+        AlertDialog(
+            onDismissRequest = { showMockDialog = false },
+            title = { Text("🧪 Тест оплаты (Debug)", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Это симуляция окна Google Play Billing.")
+                    Text("Play Store недоступен на эмуляторе без Google Services.")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Выбранный план: $planLabel", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showMockDialog = false
+                        onMockPurchase()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("✓ Симулировать покупку")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showMockDialog = false }) {
+                    Text("Отмена")
+                }
+            }
+        )
     }
 }
 
