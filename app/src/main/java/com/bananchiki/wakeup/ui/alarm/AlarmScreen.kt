@@ -98,38 +98,48 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Button(
-                onClick = { /* Snooze could just dismiss for now */ onDismiss() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black.copy(alpha = 0.25f),
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.padding(bottom = 64.dp)
-            ) {
-                Text(
-                    text = "Snooze",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                )
-            }
+            when (taskType) {
+                "MATH" -> {
+                    MathTaskScreen(onComplete = onDismiss)
+                }
+                "MEMORY" -> {
+                    MemoryTaskScreen(onComplete = onDismiss)
+                }
+                else -> {
+                    Button(
+                        onClick = { /* Snooze could just dismiss for now */ onDismiss() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black.copy(alpha = 0.25f),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(bottom = 64.dp)
+                    ) {
+                        Text(
+                            text = "Snooze",
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
 
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Amber,
-                    contentColor = Color(0xFF1A1A1A) // Dark text on amber
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-            ) {
-                Text(
-                    text = "Dismiss",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Amber,
+                            contentColor = Color(0xFF1A1A1A) // Dark text on amber
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                    ) {
+                        Text(
+                            text = "Dismiss",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
