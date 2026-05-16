@@ -1,5 +1,6 @@
 package com.bananchiki.wakeup.ui.alarm
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,18 +13,55 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bananchiki.wakeup.data.ai.TextGenerator
 import com.bananchiki.wakeup.ui.theme.Amber
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import com.bananchiki.wakeup.data.preferences.GreetingCacheManager
+import kotlinx.coroutines.flow.first
+import android.speech.tts.TextToSpeech
 
 @Composable
 fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: String) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance().time) }
+    val context = LocalContext.current
+    val cacheManager = remember { GreetingCacheManager(context) }
+    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+    var isTtsReady by remember { mutableStateOf(false) }
+
+    DisposableEffect(context) {
+        val textToSpeech = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                isTtsReady = true
+            }
+        }
+        tts = textToSpeech
+
+        onDispose {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+    }
+
+    LaunchedEffect(isTtsReady) {
+        if (!isTtsReady) return@LaunchedEffect
+        val currentSet = cacheManager.greetingsFlow().first()
+        val singleGreeting = currentSet.firstOrNull()
+        val textToSpeak = singleGreeting ?: "Доброе утро, пора вставать!"
+
+        tts?.language = Locale("ru", "RU")
+        tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
+
+        if (singleGreeting != null) {
+            cacheManager.removeGreeting(singleGreeting)
+        }
+    }
 
     LaunchedEffect(Unit) {
         while (true) {

@@ -34,7 +34,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.bananchiki.wakeup.data.preferences.OnboardingPreferenceManager
+import com.bananchiki.wakeup.data.work.GreetingsWorker
 import com.bananchiki.wakeup.ui.components.AddAlarmDialog
 import com.bananchiki.wakeup.ui.components.BottomNavBar
 import com.bananchiki.wakeup.ui.home.HomeScreen
@@ -44,6 +52,7 @@ import com.bananchiki.wakeup.ui.paywall.PaywallScreen
 import com.bananchiki.wakeup.ui.progress.ProgressScreen
 import com.bananchiki.wakeup.ui.goals.AchievementsScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
 
@@ -51,13 +60,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var billingManager: BillingManager
     private lateinit var premiumManager: PremiumManager
 
-    /*private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (!isGranted) {
-            Toast.makeText(this, "Permission denied. Alarm won't show!", Toast.LENGTH_LONG).show()
-        }
-    } */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +69,22 @@ class MainActivity : ComponentActivity() {
         premiumManager = PremiumManager(applicationContext)
         billingManager = BillingManager(applicationContext, premiumManager)
         billingManager.startConnection()
+
+        //Periodic greetings worker
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val saveRequest =
+            PeriodicWorkRequestBuilder<GreetingsWorker>(12, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "Greeting Work",
+            ExistingPeriodicWorkPolicy.KEEP,
+            saveRequest
+        )
 
         setContent {
             val themeSettings by themePreferenceManager.themeFlow.collectAsState(initial = ThemeSettings.SYSTEM)
@@ -280,27 +298,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /*private fun checkAndRequestNotificationsPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-    }
-
-    private fun checkAndRequestFullScreenPermission(){
-        val notificationManager = this.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            if (!notificationManager.canUseFullScreenIntent()) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
-                    data = android.net.Uri.parse("package:${packageName}")
-                }
-                this.startActivity(intent)
-            }
-        }
-    } */
 }
