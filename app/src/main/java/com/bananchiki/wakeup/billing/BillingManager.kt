@@ -114,25 +114,26 @@ class BillingManager(
             .setProductList(productList)
             .build()
 
-        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                productDetailsList.forEach { details ->
-                    when (details.productId) {
-                        MONTHLY_SUB -> _monthlyDetails.value = details
-                        YEARLY_SUB -> _yearlyDetails.value = details
-                    }
-                }
-                Log.d(TAG, "Found ${productDetailsList.size} products")
-                if (productDetailsList.isNotEmpty()) {
-                    _useMockBilling.value = false
-                    Log.d(TAG, "Real products found — disabling mock billing")
-                } else {
-                    Log.d(TAG, "No products found in Play Console — keeping mock mode")
-                }
-            } else {
-                Log.e(TAG, "Query failed: ${billingResult.debugMessage}")
-            }
-        }
+//        TODO
+//        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+//            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+//                productDetailsList?.forEach { details ->
+//                    when (details.productId) {
+//                        MONTHLY_SUB -> _monthlyDetails.value = details
+//                        YEARLY_SUB -> _yearlyDetails.value = details
+//                    }
+//                }
+//                Log.d(TAG, "Found ${productDetailsList?.size ?: 0} products")
+//                if (!productDetailsList.isNullOrEmpty()) {
+//                    _useMockBilling.value = false
+//                    Log.d(TAG, "Real products found — disabling mock billing")
+//                } else {
+//                    Log.d(TAG, "No products found in Play Console — keeping mock mode")
+//                }
+//            } else {
+//                Log.e(TAG, "Query failed: ${billingResult.debugMessage}")
+//            }
+//        }
     }
 
     private fun queryExistingPurchases() {
@@ -142,9 +143,9 @@ class BillingManager(
                 .build()
         ) { billingResult, purchasesList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                val hasActiveSub = purchasesList.any { purchase ->
+                val hasActiveSub = purchasesList?.any { purchase ->
                     purchase.purchaseState == Purchase.PurchaseState.PURCHASED
-                }
+                } == true
                 _subscriptionState.value = if (hasActiveSub) {
                     SubscriptionState.PURCHASED
                 } else {

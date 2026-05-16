@@ -44,7 +44,9 @@ import androidx.work.WorkRequest
 import com.bananchiki.wakeup.data.preferences.OnboardingPreferenceManager
 import com.bananchiki.wakeup.data.work.GreetingsWorker
 import com.bananchiki.wakeup.ui.components.AddAlarmDialog
+import com.bananchiki.wakeup.ui.components.AppodealNativeAd
 import com.bananchiki.wakeup.ui.components.BottomNavBar
+import androidx.compose.foundation.layout.Column
 import com.bananchiki.wakeup.ui.home.HomeScreen
 import com.bananchiki.wakeup.ui.home.HomeViewModel
 import com.bananchiki.wakeup.ui.onboarding.OnboardingScreen
@@ -52,6 +54,10 @@ import com.bananchiki.wakeup.ui.paywall.PaywallScreen
 import com.bananchiki.wakeup.ui.progress.ProgressScreen
 import com.bananchiki.wakeup.ui.goals.AchievementsScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
+import com.appodeal.ads.Appodeal
+import com.appodeal.ads.RewardedVideoCallbacks
+import com.appodeal.ads.initializing.ApdInitializationCallback
+import com.appodeal.ads.initializing.ApdInitializationError
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -70,7 +76,42 @@ class MainActivity : ComponentActivity() {
         billingManager = BillingManager(applicationContext, premiumManager)
         billingManager.startConnection()
 
-        //Periodic greetings worker
+        // Appodeal SDK init
+        Appodeal.setTesting(true) // уберите перед релизом
+
+        Appodeal.setNativeCallbacks(object : com.appodeal.ads.NativeCallbacks {
+            override fun onNativeLoaded() { android.util.Log.d("Appodeal", "Native Ad Loaded") }
+            override fun onNativeFailedToLoad() { android.util.Log.d("Appodeal", "Native Ad Failed to Load") }
+            override fun onNativeShown(nativeAd: com.appodeal.ads.NativeAd?) { android.util.Log.d("Appodeal", "Native Ad Shown") }
+            override fun onNativeShowFailed(nativeAd: com.appodeal.ads.NativeAd?) {}
+            override fun onNativeClicked(nativeAd: com.appodeal.ads.NativeAd?) {}
+            override fun onNativeExpired() {}
+        })
+
+        Appodeal.setRewardedVideoCallbacks(object : com.appodeal.ads.RewardedVideoCallbacks {
+            override fun onRewardedVideoLoaded(isPrecache: Boolean) { android.util.Log.d("Appodeal", "Rewarded Video Loaded") }
+            override fun onRewardedVideoFailedToLoad() { android.util.Log.d("Appodeal", "Rewarded Video Failed to Load") }
+            override fun onRewardedVideoShown() {}
+            override fun onRewardedVideoShowFailed() {}
+            override fun onRewardedVideoClicked() {}
+            override fun onRewardedVideoFinished(amount: Double, currency: String) {
+                android.util.Log.d("Appodeal", "Rewarded Video Finished! Amount: $amount")
+            }
+            override fun onRewardedVideoClosed(finished: Boolean) {}
+            override fun onRewardedVideoExpired() {}
+        })
+
+        Appodeal.initialize(
+            context = this,
+            appKey = "a5d8ef2ffeeb18b5bf53fa46be4d48737602cfbaf6657652",
+            adTypes = Appodeal.NATIVE or Appodeal.REWARDED_VIDEO,
+            callback = object : ApdInitializationCallback {
+                override fun onInitializationFinished(errors: List<ApdInitializationError>?) {
+                    android.util.Log.d("Appodeal", "Initialization Finished. Errors: $errors")
+                }
+            }
+        )
+
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
@@ -130,41 +171,48 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     bottomBar = {
                         if(currentRoute != "onboarding" && currentRoute != "paywall") {
-                            BottomNavBar(
-                                currentRoute = currentRoute,
-                                onAddClick = {
-                                    alarmBeingEdited = null
-                                    showAddDialog = true
-                                },
-                                onProgressClick = {
-                                    navController.navigate("progress") {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                onGoalsClick = {
-                                    navController.navigate("goals") {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                onHomeClick = {
-                                    navController.navigate("home") {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                onSettingsClick = {
-                                    navController.navigate("settings") {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                            Column {
+                                // Баннер показываем только не-премиум пользователям
+                                android.util.Log.d("Appodeal", "Current Premium Status: $isPremium")
+                                if (!isPremium) {
+                                    AppodealNativeAd()
                                 }
-                            )
+                                BottomNavBar(
+                                    currentRoute = currentRoute,
+                                    onAddClick = {
+                                        alarmBeingEdited = null
+                                        showAddDialog = true
+                                    },
+                                    onProgressClick = {
+                                        navController.navigate("progress") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    onGoalsClick = {
+                                        navController.navigate("goals") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    onHomeClick = {
+                                        navController.navigate("home") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    onSettingsClick = {
+                                        navController.navigate("settings") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 ) { innerPadding ->

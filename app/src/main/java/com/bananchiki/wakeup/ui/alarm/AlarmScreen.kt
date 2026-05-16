@@ -26,14 +26,29 @@ import androidx.compose.ui.platform.LocalContext
 import com.bananchiki.wakeup.data.preferences.GreetingCacheManager
 import kotlinx.coroutines.flow.first
 import android.speech.tts.TextToSpeech
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import com.appodeal.ads.Appodeal
+import com.appodeal.ads.RewardedVideoCallbacks
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @Composable
 fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: String) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance().time) }
     val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
     val cacheManager = remember { GreetingCacheManager(context) }
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
+    
+    // Состояние для проверки, загружено ли видео
+    var isRewardedLoaded by remember { mutableStateOf(Appodeal.isLoaded(Appodeal.REWARDED_VIDEO)) }
 
     DisposableEffect(context) {
         val textToSpeech = TextToSpeech(context) { status ->
@@ -64,9 +79,30 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
     }
 
     LaunchedEffect(Unit) {
+        // Подписываемся на коллбеки rewarded video (чтобы закрыть будильник после просмотра)
+        Appodeal.setRewardedVideoCallbacks(object : RewardedVideoCallbacks {
+            override fun onRewardedVideoLoaded(isPrecache: Boolean) { isRewardedLoaded = true }
+            override fun onRewardedVideoFailedToLoad() { isRewardedLoaded = false }
+            override fun onRewardedVideoShown() {}
+            override fun onRewardedVideoShowFailed() {}
+            override fun onRewardedVideoClicked() {}
+            override fun onRewardedVideoFinished(amount: Double, currency: String) {
+                android.util.Log.d("Appodeal", "Rewarded Video Finished! Dismissing alarm.")
+                // ПОЛЬЗОВАТЕЛЬ ДОСМОТРЕЛ — ВЫКЛЮЧАЕМ БУДИЛЬНИК
+                onDismiss()
+            }
+            override fun onRewardedVideoClosed(finished: Boolean) {}
+            override fun onRewardedVideoExpired() { isRewardedLoaded = false }
+        })
+
         while (true) {
             delay(1000)
             currentTime = Calendar.getInstance().time
+            val loaded = Appodeal.isLoaded(Appodeal.REWARDED_VIDEO)
+            if (isRewardedLoaded != loaded) {
+                android.util.Log.d("Appodeal", "Rewarded Video Load State Changed: $loaded")
+                isRewardedLoaded = loaded
+            }
         }
     }
 
@@ -160,11 +196,32 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
                         )
                     }
 
+                    if (isRewardedLoaded && activity != null) {
+                        Button(
+                            onClick = { Appodeal.show(activity, Appodeal.REWARDED_VIDEO) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF6C63FF),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(64.dp)
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Text(
+                                text = "Watch Ad to Dismiss 🎬",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
                     Button(
                         onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Amber,
-                            contentColor = Color(0xFF1A1A1A) // Dark text on amber
+                            contentColor = Color(0xFF1A1A1A)
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier

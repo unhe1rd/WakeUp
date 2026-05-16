@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.appodeal.ads.nativead.NativeAdView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nativeAdView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:adChoicePosition="end_top"
+    app:callToActionViewId="@id/callToActionView"
+    app:descriptionViewId="@id/descriptionView"
+    app:iconViewId="@id/iconView"
+    app:mediaViewId="@id/mediaView"
+    app:ratingViewId="@id/ratingView"
+    app:titleViewId="@id/titleView"
+    app:adAttributionViewId="@+id/adAttributionView">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <!-- App Icon -->
+        <com.appodeal.ads.nativead.NativeIconView
+            android:id="@+id/iconView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp" />
+
+        <!-- Text Content -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- "Ad" label -->
+            <TextView
+                android:id="@+id/adAttributionView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="9sp"
+                android:textColor="#FFFFFF"
+                android:background="#FFCC00"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"
+                android:paddingTop="1dp"
+                android:paddingBottom="1dp"
+                android:layout_marginBottom="2dp" />
+
+            <TextView
+                android:id="@+id/titleView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/descriptionView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textColor="#888888" />
+
+            <RatingBar
+                android:id="@+id/ratingView"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+        <!-- CTA Button -->
+        <Button
+            android:id="@+id/callToActionView"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:textSize="11sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:layout_marginStart="8dp" />
+
+        <!-- Hidden MediaView (required by SDK) -->
+        <com.appodeal.ads.nativead.NativeMediaView
+            android:id="@+id/mediaView"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.appodeal.ads.nativead.NativeAdView>
