@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,7 +163,8 @@ fun AddAlarmDialog(
                     Triple("NONE", " Обычное нажатие", Icons.Default.Check),
                     Triple("MATH", " Решить пример", Icons.Default.Add),
                     Triple("MEMORY", " Найти пары", Icons.Default.Apps),
-                    Triple("AI", " Ввод текста", Icons.Default.AutoAwesome)
+                    Triple("AI", " Ввод текста", Icons.Default.AutoAwesome),
+                    Triple("REWARDED", " Посмотреть рекламу \uD83E\uDEF6", Icons.Default.PlayArrow)
                 )
                 
                 Column(

@@ -36,7 +36,7 @@ class PremiumManager(private val context: Context) {
     /** Free: only MATH task */
     fun canUseTask(taskType: String, isPremium: Boolean): Boolean {
         if (isPremium) return true
-        return taskType == "NONE" || taskType == "MATH"
+        return taskType == "NONE" || taskType == "MATH" || taskType == "REWARDED"
     }
 
     /** Free: only SYSTEM theme */

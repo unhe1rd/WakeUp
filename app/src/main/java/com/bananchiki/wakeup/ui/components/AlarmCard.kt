@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -217,6 +218,7 @@ fun AlarmCard(
                         "MATH" -> Icons.Default.Add
                         "MEMORY" -> Icons.Default.Apps
                         "AI" -> Icons.Default.AutoAwesome
+                        "REWARDED" -> Icons.Default.PlayArrow
                         else -> Icons.Default.Check
                     }
                     Icon(

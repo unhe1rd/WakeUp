@@ -186,6 +186,48 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
                 "AI" -> {
                     AiGreetingTaskScreen(onComplete = onDismiss, greetingText = greetingText)
                 }
+                "REWARDED" -> {
+                    Spacer(Modifier.weight(1f))
+                    if (isRewardedLoaded && activity != null) {
+                        Button(
+                            onClick = { Appodeal.show(activity, Appodeal.REWARDED_VIDEO) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF6C63FF),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(64.dp)
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Text(
+                                text = "Смотреть рекламу 🎬",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    } else {
+                        // Если реклама не загружена, разрешаем выключить просто так, чтобы не будить вечно
+                        Button(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Amber,
+                                contentColor = Color(0xFF1A1A1A)
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(64.dp)
+                        ) {
+                            Text(
+                                text = "Выключить (Реклама не готова)",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
                 else -> {
                     Spacer(Modifier.weight(1f))
                     Button(
@@ -202,27 +244,6 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
                             fontSize = 18.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
-                    }
-
-                    if (isRewardedLoaded && activity != null) {
-                        Button(
-                            onClick = { Appodeal.show(activity, Appodeal.REWARDED_VIDEO) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF6C63FF),
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(64.dp)
-                                .padding(bottom = 8.dp)
-                        ) {
-                            Text(
-                                text = "Watch Ad to Dismiss 🎬",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
                     }
 
                     Button(
