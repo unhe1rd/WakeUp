@@ -10,7 +10,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
-import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material3.*
@@ -27,6 +28,7 @@ fun BottomNavBar(
     currentRoute: String = "home",
     onAddClick: () -> Unit,
     onProgressClick: () -> Unit = {},
+    onGoalsClick: () -> Unit = {},
     onSettingsClick: () -> Unit,
     onHomeClick: () -> Unit = {}
 ) {
@@ -108,20 +110,31 @@ fun BottomNavBar(
                 // Spacer for FAB
                 Spacer(modifier = Modifier.width(56.dp))
 
-                // Clock
+                // Goals
+                val isGoals = currentRoute == "goals"
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .clickable { }
+                        .clickable { onGoalsClick() }
                 ) {
                     Icon(
-                        Icons.Outlined.Alarm,
-                        contentDescription = "Clock",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        if (isGoals) Icons.Filled.EmojiEvents else Icons.Outlined.EmojiEvents,
+                        contentDescription = "Goals",
+                        tint = if (isGoals) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
+                    if (isGoals) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .size(width = 16.dp, height = 3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                    }
                 }
 
                 // Settings

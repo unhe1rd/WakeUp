@@ -12,6 +12,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material3.*
@@ -25,6 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bananchiki.wakeup.data.model.Alarm
+import com.bananchiki.wakeup.ui.theme.Amber
+import com.bananchiki.wakeup.ui.theme.DarkText
 
 @Composable
 fun AlarmCardGrid(
@@ -84,7 +91,7 @@ fun AlarmCard(
     var showMenu by remember { mutableStateOf(false) }
     val borderColor by animateColorAsState(
         targetValue = if (alarm.isEnabled)
-            MaterialTheme.colorScheme.primary
+            Amber
         else
             MaterialTheme.colorScheme.outline,
         animationSpec = tween(300),
@@ -102,7 +109,7 @@ fun AlarmCard(
                 shape = RoundedCornerShape(16.dp)
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -137,17 +144,22 @@ fun AlarmCard(
                     )
                     DropdownMenu(
                         expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
+                        onDismissRequest = { showMenu = false },
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.dp, Amber, RoundedCornerShape(8.dp))
                     ) {
                         DropdownMenuItem(
                             text = { Text("Edit") },
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp)) },
                             onClick = {
                                 showMenu = false
                                 onEdit()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Delete") },
+                            text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp)) },
                             onClick = {
                                 showMenu = false
                                 onDelete()
@@ -189,25 +201,42 @@ fun AlarmCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Outlined.Alarm,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = if (alarm.isEnabled)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.outline
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.Alarm,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = if (alarm.isEnabled)
+                            Amber
+                        else
+                            MaterialTheme.colorScheme.outline
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    val taskIcon = when (alarm.taskType) {
+                        "MATH" -> Icons.Default.Add
+                        "MEMORY" -> Icons.Default.Apps
+                        else -> Icons.Default.Check
+                    }
+                    Icon(
+                        taskIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = if (alarm.isEnabled)
+                            Amber
+                        else
+                            MaterialTheme.colorScheme.outline
+                    )
+                }
                 Switch(
                     checked = alarm.isEnabled,
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        checkedThumbColor = Amber,
+                        checkedTrackColor = Color.Transparent,
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        uncheckedBorderColor = Color.Transparent,
-                        checkedBorderColor = Color.Transparent
+                        uncheckedTrackColor = Color.Transparent,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.outline,
+                        checkedBorderColor = Amber
                     ),
                     modifier = Modifier.height(24.dp)
                 )
@@ -232,7 +261,7 @@ private fun DaysOfWeekRow(alarm: Alarm) {
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontSize = 9.sp,
                         color = if (isActive)
-                            MaterialTheme.colorScheme.primary
+                            Amber
                         else
                             MaterialTheme.colorScheme.outline,
                         fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
@@ -245,7 +274,7 @@ private fun DaysOfWeekRow(alarm: Alarm) {
                         .clip(CircleShape)
                         .background(
                             if (isActive)
-                                MaterialTheme.colorScheme.primary
+                                Amber
                             else
                                 Color.Transparent
                         )

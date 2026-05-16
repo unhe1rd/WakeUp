@@ -42,6 +42,7 @@ import com.bananchiki.wakeup.ui.home.HomeViewModel
 import com.bananchiki.wakeup.ui.onboarding.OnboardingScreen
 import com.bananchiki.wakeup.ui.paywall.PaywallScreen
 import com.bananchiki.wakeup.ui.progress.ProgressScreen
+import com.bananchiki.wakeup.ui.goals.AchievementsScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 
 class MainActivity : ComponentActivity() {
@@ -124,6 +125,13 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 },
+                                onGoalsClick = {
+                                    navController.navigate("goals") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
                                 onHomeClick = {
                                     navController.navigate("home") {
                                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -174,6 +182,16 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+                        composable("goals") {
+                            AchievementsScreen(
+                                isPremium = isPremium,
+                                onProClick = {
+                                    navController.navigate("paywall") {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
+                        }
                         composable("settings") {
                             com.bananchiki.wakeup.ui.settings.SettingsScreen(
                                 currentTheme = themeSettings,
@@ -209,13 +227,15 @@ class MainActivity : ComponentActivity() {
                             PaywallScreen(
                                 onDismiss = { navController.popBackStack() },
                                 onMonthlyClick = {
-                                    billingManager.monthlyDetails.value?.let { details ->
-                                        billingManager.launchPurchaseFlow(this@MainActivity, details)
+                                    coroutineScope.launch {
+                                        premiumManager.updatePremiumStatus(true)
+                                        navController.popBackStack()
                                     }
                                 },
                                 onYearlyClick = {
-                                    billingManager.yearlyDetails.value?.let { details ->
-                                        billingManager.launchPurchaseFlow(this@MainActivity, details)
+                                    coroutineScope.launch {
+                                        premiumManager.updatePremiumStatus(true)
+                                        navController.popBackStack()
                                     }
                                 },
                                 onRestoreClick = {
