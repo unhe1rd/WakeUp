@@ -46,35 +46,39 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
     val cacheManager = remember { GreetingCacheManager(context) }
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
+    var greetingText by remember { mutableStateOf("Доброе утро, пора вставать!") }
     
     // Состояние для проверки, загружено ли видео
     var isRewardedLoaded by remember { mutableStateOf(Appodeal.isLoaded(Appodeal.REWARDED_VIDEO)) }
 
-    DisposableEffect(context) {
-        val textToSpeech = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                isTtsReady = true
+    if (taskType == "AI") {
+        DisposableEffect(context) {
+            val textToSpeech = TextToSpeech(context) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    isTtsReady = true
+                }
+            }
+            tts = textToSpeech
+
+            onDispose {
+                textToSpeech.stop()
+                textToSpeech.shutdown()
             }
         }
-        tts = textToSpeech
 
-        onDispose {
-            textToSpeech.stop()
-            textToSpeech.shutdown()
-        }
-    }
+        LaunchedEffect(isTtsReady) {
+            if (!isTtsReady) return@LaunchedEffect
+            val currentSet = cacheManager.greetingsFlow().first()
+            val singleGreeting = currentSet.firstOrNull()
+            greetingText = singleGreeting ?: "Доброе утро, пора вставать!"
+            val textToSpeak = singleGreeting ?: "Доброе утро, пора вставать!"
 
-    LaunchedEffect(isTtsReady) {
-        if (!isTtsReady) return@LaunchedEffect
-        val currentSet = cacheManager.greetingsFlow().first()
-        val singleGreeting = currentSet.firstOrNull()
-        val textToSpeak = singleGreeting ?: "Доброе утро, пора вставать!"
+            tts?.language = Locale("ru", "RU")
+            tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
 
-        tts?.language = Locale("ru", "RU")
-        tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
-
-        if (singleGreeting != null) {
-            cacheManager.removeGreeting(singleGreeting)
+            if (singleGreeting != null) {
+                cacheManager.removeGreeting(singleGreeting)
+            }
         }
     }
 
@@ -170,18 +174,22 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
                 fontWeight = FontWeight.ExtraBold
             )
 
-            Spacer(modifier = Modifier.weight(1f))
-
             when (taskType) {
                 "MATH" -> {
+                    Spacer(Modifier.weight(1f))
                     MathTaskScreen(onComplete = onDismiss)
                 }
                 "MEMORY" -> {
+                    Spacer(Modifier.weight(1f))
                     MemoryTaskScreen(onComplete = onDismiss)
                 }
+                "AI" -> {
+                    AiGreetingTaskScreen(onComplete = onDismiss, greetingText = greetingText)
+                }
                 else -> {
+                    Spacer(Modifier.weight(1f))
                     Button(
-                        onClick = { /* Snooze could just dismiss for now */ onDismiss() },
+                        onClick = { onDismiss() },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Black.copy(alpha = 0.25f),
                             contentColor = Color.White
@@ -229,7 +237,7 @@ fun AlarmScreen(onDismiss: () -> Unit, label: String = "Wake up!", taskType: Str
                             .height(64.dp)
                     ) {
                         Text(
-                            text = "Dismiss",
+                            text = "Выключить",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
