@@ -35,6 +35,9 @@ fun HomeScreen(
             isPremium = isPremium,
             onProClick = onProClick
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         WeekCalendarStrip()
 
         Spacer(modifier = Modifier.height(16.dp))
