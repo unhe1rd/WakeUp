@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalUriHandler
 import com.bananchiki.wakeup.data.preferences.ThemeSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +39,8 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
+        val uriHandler = LocalUriHandler.current
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,6 +142,24 @@ fun SettingsScreen(
                 },
                 locked = !isPremium
             )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(
+                text = "О приложении",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            DocumentLinkRow(
+                text = "Privacy Policy",
+                onClick = { uriHandler.openUri("https://www.notion.so/Privacy-Policy-3651fb3759448035b0c2d18f03120a26?source=copy_link") }
+            )
+            DocumentLinkRow(
+                text = "Terms & Conditions",
+                onClick = { uriHandler.openUri("https://www.notion.so/Terms-Conditions-3651fb37594480b3b4daf989c4c4ef94?source=copy_link") }
+            )
         }
     }
 }
@@ -179,5 +200,31 @@ private fun ThemeSelectionRow(
                 modifier = Modifier.size(18.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun DocumentLinkRow(
+    text: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 16.dp, horizontal = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = "↗",
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
     }
 }

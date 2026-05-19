@@ -25,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bananchiki.wakeup.data.preferences.StatsPreferenceManager
 import com.bananchiki.wakeup.ui.theme.Amber
-import com.bananchiki.wakeup.ui.theme.DarkText
-import com.bananchiki.wakeup.ui.theme.GrayMedium
 
 @Composable
 fun ProgressScreen(
@@ -55,7 +53,7 @@ fun ProgressScreen(
             Text(
                 text = "Your Progress",
                 style = MaterialTheme.typography.headlineMedium,
-                color = DarkText,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -63,7 +61,7 @@ fun ProgressScreen(
             Text(
                 text = "Track your gamified wake-up stats",
                 style = MaterialTheme.typography.bodyMedium,
-                color = GrayMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -167,13 +165,13 @@ fun WakeUpTimeCard(avgWakeUpTime: String?) {
             modifier = Modifier.padding(20.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Average Wake-Up Time", style = MaterialTheme.typography.labelMedium, color = GrayMedium)
+            Text("Average Wake-Up Time", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = avgWakeUpTime ?: "--:--", 
                 fontSize = 32.sp, 
                 fontWeight = FontWeight.Bold, 
-                color = DarkText
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -188,14 +186,14 @@ fun WakeUpStatsCard(snoozeCount: Int, avgTaskTimeSec: Int?) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Wake-Up Performance", style = MaterialTheme.typography.labelLarge, color = GrayMedium)
+            Text("Wake-Up Performance", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(16.dp))
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Snoozes hit", fontSize = 16.sp, color = DarkText, fontWeight = FontWeight.Medium)
+                    Text("Snoozes hit", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(if (snoozeCount == 0) "Perfect!" else "Try to reduce this", fontSize = 12.sp, color = GrayMedium)
+                    Text(if (snoozeCount == 0) "Perfect!" else "Try to reduce this", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Box(
                     modifier = Modifier.size(48.dp).background(MaterialTheme.colorScheme.errorContainer.copy(alpha=0.6f), CircleShape),
@@ -209,9 +207,9 @@ fun WakeUpStatsCard(snoozeCount: Int, avgTaskTimeSec: Int?) {
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Avg. Task Time", fontSize = 16.sp, color = DarkText, fontWeight = FontWeight.Medium)
+                    Text("Avg. Task Time", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text("Time to clear alarms", fontSize = 12.sp, color = GrayMedium)
+                    Text("Time to clear alarms", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Box(
                     modifier = Modifier
@@ -241,7 +239,7 @@ fun MoodStatsCard(great: Int, okay: Int, tired: Int) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Morning Mood", style = MaterialTheme.typography.labelLarge, color = GrayMedium)
+            Text("Morning Mood", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -265,7 +263,7 @@ fun MoodItem(emoji: String, title: String, count: Int) {
             Text(emoji, fontSize = 28.sp)
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(title, fontSize = 14.sp, color = GrayMedium, fontWeight = FontWeight.Medium)
-        Text(if (count > 0) "$count" else "--", fontSize = 18.sp, color = DarkText, fontWeight = FontWeight.Bold)
+        Text(title, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+        Text(if (count > 0) "$count" else "--", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
     }
 }

@@ -14,10 +14,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.bananchiki.wakeup.ui.alarm.AlarmScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
+import android.media.ToneGenerator
 import com.bananchiki.wakeup.data.AchievementManager
 
 class AlarmActivity : ComponentActivity() {
-    private var ringtone: Ringtone? = null
+    private var mediaPlayer: android.media.MediaPlayer? = null
+    private var fallbackRingtone: android.media.Ringtone? = null
+    private var toneGenerator: ToneGenerator? = null
     private var vibrator: Vibrator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,21 +59,66 @@ class AlarmActivity : ComponentActivity() {
     }
 
     private fun startAlarmEffects() {
-        // Sound
-        val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-        ringtone = RingtoneManager.getRingtone(this, alarmUri)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ringtone?.audioAttributes = android.media.AudioAttributes.Builder()
-                .setUsage(android.media.AudioAttributes.USAGE_ALARM)
-                .build()
-        } else {
-            @Suppress("DEPRECATION")
-            ringtone?.streamType = android.media.AudioManager.STREAM_ALARM
+        // Проверяем и устанавливаем громкость, если она на нуле
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            val currentVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_ALARM)
+            if (currentVolume == 0) {
+                val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
+                audioManager.setStreamVolume(android.media.AudioManager.STREAM_ALARM, maxVolume / 2, 0)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-        ringtone?.play()
+        // Sound
+        var alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        if (alarmUri == null) {
+            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+        }
+        if (alarmUri == null) {
+            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        }
+
+        try {
+            mediaPlayer = android.media.MediaPlayer().apply {
+                setDataSource(this@AlarmActivity, alarmUri)
+                val attributes = android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                setAudioAttributes(attributes)
+                isLooping = true
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Fallback if MediaPlayer fails
+            try {
+                fallbackRingtone = RingtoneManager.getRingtone(this, alarmUri)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    fallbackRingtone?.isLooping = true
+                    fallbackRingtone?.audioAttributes = android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                        .build()
+                } else {
+                    @Suppress("DEPRECATION")
+                    fallbackRingtone?.streamType = android.media.AudioManager.STREAM_ALARM
+                }
+                fallbackRingtone?.play()
+            } catch (e2: Exception) {
+                e2.printStackTrace()
+            }
+
+            // Ultimate fallback if RingtoneManager also fails or no sound is available
+            try {
+                toneGenerator = ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100)
+                toneGenerator?.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 60000) // 1 min
+            } catch (e3: Exception) {
+                e3.printStackTrace()
+            }
+        }
 
         // Vibration
         vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -97,7 +145,19 @@ class AlarmActivity : ComponentActivity() {
     }
 
     private fun dismissAlarm() {
-        ringtone?.stop()
+        try {
+            if (mediaPlayer?.isPlaying == true) {
+                mediaPlayer?.stop()
+            }
+            mediaPlayer?.release()
+            mediaPlayer = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        fallbackRingtone?.stop()
+        toneGenerator?.stopTone()
+        toneGenerator?.release()
+        toneGenerator = null
         vibrator?.cancel()
 
         AchievementManager.registerWakeUp(this)

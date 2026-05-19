@@ -170,11 +170,8 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if(currentRoute != "onboarding" && currentRoute != "paywall") {
                             Column {
-                                // Баннер показываем только не-премиум пользователям
-                                android.util.Log.d("Appodeal", "Current Premium Status: $isPremium")
-                                if (!isPremium) {
-                                    AppodealNativeAd()
-                                }
+                                // Показываем рекламу всем пользователям, так как подписка временно отключена
+                                AppodealNativeAd()
                                 BottomNavBar(
                                     currentRoute = currentRoute,
                                     onAddClick = {

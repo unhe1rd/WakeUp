@@ -58,7 +58,7 @@ fun WeekCalendarStrip() {
         Text(
             text = currentMonth,
             style = MaterialTheme.typography.titleMedium.copy(
-                color = Amber,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold
             ),
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -75,14 +75,14 @@ private fun DayChip(dayName: String, date: Int, isToday: Boolean) {
         Text(
             text = dayName,
             style = MaterialTheme.typography.labelSmall,
-            color = if (isToday) DarkText else GrayMedium
+            color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(4.dp))
         Box(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(if (isToday) Amber else Color.Transparent),
+                .background(if (isToday) MaterialTheme.colorScheme.primary else Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -90,7 +90,7 @@ private fun DayChip(dayName: String, date: Int, isToday: Boolean) {
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
                 ),
-                color = if (isToday) White else GrayMedium
+                color = if (isToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
             )
         }
     }

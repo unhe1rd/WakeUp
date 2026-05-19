@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import com.appodeal.ads.Appodeal
 import com.appodeal.ads.NativeCallbacks
@@ -33,6 +34,11 @@ fun AppodealNativeAd(modifier: Modifier = Modifier) {
         }
     }
 
+    val titleColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.toArgb()
+    val descColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.toArgb()
+    val btnBgColor = androidx.compose.material3.MaterialTheme.colorScheme.primary.toArgb()
+    val btnTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary.toArgb()
+
     if (isAdLoaded) {
         AndroidView(
             modifier = modifier
@@ -47,6 +53,14 @@ fun AppodealNativeAd(modifier: Modifier = Modifier) {
                 view
             },
             update = { view ->
+                // Применяем цвета из текущей Compose-темы (Светлая/Темная)
+                view.findViewById<android.widget.TextView>(R.id.titleView)?.setTextColor(titleColor)
+                view.findViewById<android.widget.TextView>(R.id.descriptionView)?.setTextColor(descColor)
+                view.findViewById<android.widget.Button>(R.id.callToActionView)?.apply {
+                    setTextColor(btnTextColor)
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(btnBgColor)
+                }
+
                 if (Appodeal.isLoaded(Appodeal.NATIVE)) {
                     val ads = Appodeal.getNativeAds(1)
                     if (ads.isNotEmpty()) {

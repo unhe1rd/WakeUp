@@ -51,21 +51,21 @@ fun AchievementsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F0FE))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Уровень $level", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = DarkText)
-                    Text(levelTitle, fontSize = 18.sp, color = GrayMedium, modifier = Modifier.padding(bottom = 12.dp))
+                    Text("Уровень $level", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text(levelTitle, fontSize = 18.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), modifier = Modifier.padding(bottom = 12.dp))
                     LinearProgressIndicator(
                         progress = progress.toFloat() / maxProgress,
                         modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                        color = Color(0xFF4A90E2),
-                        trackColor = GrayMedium.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
                     )
-                    Text("$progress / $maxProgress подъёмов", fontSize = 14.sp, color = GrayMedium, modifier = Modifier.padding(top = 8.dp))
+                    Text("$progress / $maxProgress подъёмов", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), modifier = Modifier.padding(top = 8.dp))
                 }
             }
         }
@@ -78,7 +78,7 @@ fun AchievementsScreen(
         }
 
         item {
-            Text("Награды за дисциплину", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = DarkText, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+            Text("Награды за дисциплину", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
         }
 
         items(achievementsList) { achievement ->
@@ -121,11 +121,11 @@ fun AchievementsScreen(
 
 @Composable
 fun StreakCard(title: String, value: Int, modifier: Modifier = Modifier) {
-    Card(modifier = modifier, shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F7FA))) {
+    Card(modifier = modifier, shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = title, fontSize = 14.sp, color = GrayMedium)
-            Text(text = value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = DarkText, modifier = Modifier.padding(top = 4.dp))
-            Text(text = "дней", fontSize = 12.sp, color = GrayMedium)
+            Text(text = title, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 4.dp))
+            Text(text = "дней", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -134,14 +134,14 @@ fun StreakCard(title: String, value: Int, modifier: Modifier = Modifier) {
 fun AchievementItem(title: String, description: String, current: Int, required: Int) {
     val completed = current >= required
     val progressVal = (current.toFloat() / required).coerceIn(0f, 1f)
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (completed) Color(0xFFE8F5E9) else Color(0xFFF9F9F9))) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (completed) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant)) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
-                Text(description, fontSize = 13.sp, color = GrayMedium)
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(progress = progressVal, modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)), color = if (completed) Color(0xFF4CAF50) else Color(0xFF4A90E2), trackColor = GrayMedium.copy(alpha = 0.2f))
-                Text("$current / $required", fontSize = 12.sp, color = GrayMedium, modifier = Modifier.padding(top = 4.dp))
+                LinearProgressIndicator(progress = progressVal, modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)), color = if (completed) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+                Text("$current / $required", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
             }
             if (completed) { Text("✅", fontSize = 24.sp, modifier = Modifier.padding(start = 8.dp)) }
         }

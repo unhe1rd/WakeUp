@@ -3,6 +3,8 @@ package com.bananchiki.wakeup.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bananchiki.wakeup.data.model.Alarm
@@ -22,6 +26,8 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.viewinterop.AndroidView
+import com.bananchiki.wakeup.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,37 +41,9 @@ fun AddAlarmDialog(
     var label by remember { mutableStateOf(alarmToEdit?.label ?: "Просыпайся!") }
     var daysOfWeek by remember { mutableStateOf(alarmToEdit?.daysOfWeek ?: "0000000") }
     var selectedTaskType by remember { mutableStateOf(alarmToEdit?.taskType ?: "NONE") }
-    var showTimePicker by remember { mutableStateOf(false) }
     
     val dayLetters = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
-
-    if (showTimePicker) {
-        val timePickerState = rememberTimePickerState(
-            initialHour = selectedHour,
-            initialMinute = selectedMinute,
-            is24Hour = true
-        )
-        AlertDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    selectedHour = timePickerState.hour
-                    selectedMinute = timePickerState.minute
-                    showTimePicker = false
-                }) {
-                    Text("OK", color = MaterialTheme.colorScheme.primary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) {
-                    Text("Отмена", color = MaterialTheme.colorScheme.primary)
-                }
-            },
-            text = {
-                TimePicker(state = timePickerState)
-            }
-        )
-    }
+    val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -77,26 +55,41 @@ fun AddAlarmDialog(
             )
         },
         text = {
-            Column {
-                // Time display — tap to change
-                Row(
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                // Time Picker Spinner inline
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .clickable { showTimePicker = true }
-                        .padding(vertical = 20.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.Bottom
+                        .height(160.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = String.format("%02d:%02d", selectedHour, selectedMinute),
-                        style = MaterialTheme.typography.displayLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    key(isDarkTheme) {
+                        AndroidView(
+                            modifier = Modifier.fillMaxWidth(),
+                            factory = { context ->
+                                val themeRes = if (isDarkTheme) R.style.SpinnerTimePickerDark else R.style.SpinnerTimePickerLight
+                                val themedContext = android.view.ContextThemeWrapper(context, themeRes)
+                                val view = android.view.LayoutInflater.from(themedContext).inflate(R.layout.time_picker_spinner, null) as android.widget.TimePicker
+                                view.setIs24HourView(true)
+                                view.hour = selectedHour
+                                view.minute = selectedMinute
+                                view.setOnTimeChangedListener { _, h, m ->
+                                    selectedHour = h
+                                    selectedMinute = m
+                                }
+                                view
+                            },
+                            update = { view ->
+                                if (view.hour != selectedHour) view.hour = selectedHour
+                                if (view.minute != selectedMinute) view.minute = selectedMinute
+                            }
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Label
                 OutlinedTextField(

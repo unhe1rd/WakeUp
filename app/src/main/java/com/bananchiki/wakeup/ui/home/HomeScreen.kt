@@ -32,11 +32,12 @@ fun HomeScreen(
             .fillMaxSize()
     ) {
         GreetingHeader(
+            alarms = alarms,
             isPremium = isPremium,
             onProClick = onProClick
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         WeekCalendarStrip()
 

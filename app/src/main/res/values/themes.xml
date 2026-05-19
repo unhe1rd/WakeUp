@@ -2,4 +2,12 @@
 <resources>
 
     <style name="Theme.WakeUp" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="SpinnerTimePickerLight" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:textColorPrimary">#000000</item>
+    </style>
+
+    <style name="SpinnerTimePickerDark" parent="android:Theme.Material.Dialog">
+        <item name="android:textColorPrimary">#FFFFFF</item>
+    </style>
 </resources>
