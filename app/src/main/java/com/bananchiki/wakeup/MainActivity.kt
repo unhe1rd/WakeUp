@@ -77,8 +77,6 @@ class MainActivity : ComponentActivity() {
         billingManager.startConnection()
 
         // Appodeal SDK init
-        Appodeal.setTesting(true) // уберите перед релизом
-
         Appodeal.setNativeCallbacks(object : com.appodeal.ads.NativeCallbacks {
             override fun onNativeLoaded() { android.util.Log.d("Appodeal", "Native Ad Loaded") }
             override fun onNativeFailedToLoad() { android.util.Log.d("Appodeal", "Native Ad Failed to Load") }

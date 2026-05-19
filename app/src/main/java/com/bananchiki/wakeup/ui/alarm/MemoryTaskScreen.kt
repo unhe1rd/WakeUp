@@ -99,19 +99,17 @@ fun MemoryTaskScreen(onComplete: () -> Unit) {
         }
     }
 
-    if (disabled) {
-        LaunchedEffect(Unit) {
-            delay(800)
-            val first = selectedIndex
-            if (first != null) {
-                revealed[first] = false
-                revealed[revealed.indexOfLast { it && !matched[revealed.indexOf(it)] }] = false
-                // Find all that are revealed but not matched
-                for (i in revealed.indices) {
-                    if (revealed[i] && !matched[i]) {
-                        revealed[i] = false
-                    }
-                }
+    // Mistake handling logic
+    LaunchedEffect(disabled) {
+        if (disabled && selectedIndex != null) {
+            // It's a mistake! Reveal all for 3 seconds
+            for (i in revealed.indices) {
+                revealed[i] = true
+            }
+            delay(3000)
+            // Hide all except matched ones
+            for (i in revealed.indices) {
+                revealed[i] = matched[i]
             }
             selectedIndex = null
             disabled = false
