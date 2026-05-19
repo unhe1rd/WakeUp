@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.bananchiki.wakeup.ui.alarm.AlarmScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
+import com.bananchiki.wakeup.data.AchievementManager
 
 class AlarmActivity : ComponentActivity() {
     private var ringtone: Ringtone? = null
@@ -98,6 +99,8 @@ class AlarmActivity : ComponentActivity() {
     private fun dismissAlarm() {
         ringtone?.stop()
         vibrator?.cancel()
+
+        AchievementManager.registerWakeUp(this)
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
         val alarmId = intent.getIntExtra("alarm_id", 0)

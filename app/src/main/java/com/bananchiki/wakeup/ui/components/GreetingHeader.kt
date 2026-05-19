@@ -44,6 +44,6 @@ fun GreetingHeader(
             Spacer(modifier = Modifier.width(6.dp))
             Text(text = emoji, fontSize = 28.sp)
         }
-        ProBadge(isPremium = isPremium, onClick = onProClick)
+        // ProBadge(isPremium = isPremium, onClick = onProClick)
     }
 }

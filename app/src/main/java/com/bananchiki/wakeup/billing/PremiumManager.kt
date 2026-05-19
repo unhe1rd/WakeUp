@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 private val Context.premiumDataStore: DataStore<Preferences> by preferencesDataStore(name = "premium_settings")
@@ -18,9 +19,13 @@ class PremiumManager(private val context: Context) {
         const val FREE_ALARM_LIMIT = 3
     }
 
+    /*
     val isPremiumFlow: Flow<Boolean> = context.premiumDataStore.data.map { preferences ->
         preferences[IS_PREMIUM_KEY] ?: false
     }
+    */
+
+    val isPremiumFlow: Flow<Boolean> = flowOf(true)
 
     suspend fun updatePremiumStatus(isPremium: Boolean) {
         context.premiumDataStore.edit { preferences ->

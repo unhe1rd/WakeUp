@@ -1,5 +1,6 @@
 package com.bananchiki.wakeup.ui.goals
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -100,6 +101,22 @@ fun AchievementsScreen(
 
 
     }
+
+    /*Button(onClick = {
+        val prefs = context.getSharedPreferences("achievements", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putInt("total_wakeups", 150) // Сразу даем 150 подъемов
+            .putInt("current_streak", 30) // И 30 дней подряд
+            .putInt("best_streak", 228) // И 30 дней подряд
+            .apply()
+
+        // Принудительно обновляем UI
+        totalWakeUps.value = 150
+        currentStreak.value = 30
+        bestStreak.value = 228
+    }) {
+        Text("Чит: Максимальный уровень")
+    }*/
 }
 
 @Composable
