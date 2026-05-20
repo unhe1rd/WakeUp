@@ -148,9 +148,13 @@ fun getNextAlarmTimeStr(alarms: List<Alarm>, timeTrigger: Long = 0L): String? {
 
     val diffMs = minTime - now.timeInMillis
     val diffMin = (diffMs / (1000 * 60)) % 60
-    val diffHour = (diffMs / (1000 * 60 * 60))
+    val totalHours = (diffMs / (1000 * 60 * 60))
+    val diffHour = totalHours % 24
+    val diffDay = totalHours / 24
 
-    return if (diffHour > 0) {
+    return if (diffDay > 0) {
+        "Прозвонит через ${diffDay}д ${diffHour}ч ${diffMin}м"
+    } else if (diffHour > 0) {
         "Прозвонит через ${diffHour}ч ${diffMin}м"
     } else {
         "Прозвонит через ${diffMin}м"
