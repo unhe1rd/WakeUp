@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
@@ -123,8 +124,8 @@ fun OnboardingScreen(onSaveAndFinishOnboarding: () -> Unit) {
                 )
 
                 2 -> OnboardingPage(
-                    icon = Icons.Rounded.CheckCircle,
-                    title = "🎵 Рингтоны",
+                    icon = Icons.Rounded.MusicNote,
+                    title = "Рингтоны",
                     subtitle = "В настройках ты можешь выбрать звук будильника из 15 мелодий — от спокойных до самых громких. Найди ту, которая точно тебя разбудит!",
                     buttonText = "Далее",
                     onButtonClick = {
