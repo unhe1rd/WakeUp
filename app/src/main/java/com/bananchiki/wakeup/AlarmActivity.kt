@@ -1,8 +1,7 @@
 package com.bananchiki.wakeup
 
 import android.content.Context
-import android.media.Ringtone
-import android.media.RingtoneManager
+import android.media.ToneGenerator
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -14,12 +13,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.bananchiki.wakeup.ui.alarm.AlarmScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
-import android.media.ToneGenerator
 import com.bananchiki.wakeup.data.AchievementManager
+import com.bananchiki.wakeup.data.preferences.RingtonePreferenceManager
 
 class AlarmActivity : ComponentActivity() {
     private var mediaPlayer: android.media.MediaPlayer? = null
-    private var fallbackRingtone: android.media.Ringtone? = null
     private var toneGenerator: ToneGenerator? = null
     private var vibrator: Vibrator? = null
 
@@ -38,7 +36,7 @@ class AlarmActivity : ComponentActivity() {
             )
         }
 
-        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         volumeControlStream = android.media.AudioManager.STREAM_ALARM
 
@@ -59,64 +57,82 @@ class AlarmActivity : ComponentActivity() {
     }
 
     private fun startAlarmEffects() {
-        // Проверяем и устанавливаем громкость, если она на нуле
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+
+        // Force alarm AND music volume up (emulator often has alarm stream muted)
         try {
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-            val currentVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_ALARM)
-            if (currentVolume == 0) {
-                val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
-                audioManager.setStreamVolume(android.media.AudioManager.STREAM_ALARM, maxVolume / 2, 0)
+            val alarmMax = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
+            val musicMax = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+            if (audioManager.getStreamVolume(android.media.AudioManager.STREAM_ALARM) == 0) {
+                audioManager.setStreamVolume(android.media.AudioManager.STREAM_ALARM, alarmMax / 2, 0)
+            }
+            if (audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC) == 0) {
+                audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, musicMax / 2, 0)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("AlarmActivity", "Failed to set volume", e)
         }
 
-        // Sound
-        var alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        if (alarmUri == null) {
-            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-        }
-        if (alarmUri == null) {
-            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        }
+        // Get selected ringtone from preferences
+        val ringtoneManager = RingtonePreferenceManager(this)
+        val selectedSound = ringtoneManager.getSelectedRingtoneSync()
+        val soundResId = selectedSound.rawResId
 
+        val alarmAttributes = android.media.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        val mediaAttributes = android.media.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build()
+
+        var soundStarted = false
+
+        // Attempt 1: Play with USAGE_ALARM
         try {
-            mediaPlayer = android.media.MediaPlayer().apply {
-                setDataSource(this@AlarmActivity, alarmUri)
-                val attributes = android.media.AudioAttributes.Builder()
-                    .setUsage(android.media.AudioAttributes.USAGE_ALARM)
-                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-                setAudioAttributes(attributes)
-                isLooping = true
-                prepare()
-                start()
+            val player = android.media.MediaPlayer.create(this, soundResId)
+            if (player != null) {
+                player.setAudioAttributes(alarmAttributes)
+                player.isLooping = true
+                player.start()
+                mediaPlayer = player
+                soundStarted = true
+                android.util.Log.d("AlarmActivity", "✅ Playing ${selectedSound.name} with USAGE_ALARM")
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            // Fallback if MediaPlayer fails
+            android.util.Log.e("AlarmActivity", "❌ USAGE_ALARM failed", e)
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+
+        // Attempt 2: USAGE_MEDIA fallback (emulator)
+        if (!soundStarted) {
             try {
-                fallbackRingtone = RingtoneManager.getRingtone(this, alarmUri)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    fallbackRingtone?.isLooping = true
-                    fallbackRingtone?.audioAttributes = android.media.AudioAttributes.Builder()
-                        .setUsage(android.media.AudioAttributes.USAGE_ALARM)
-                        .build()
-                } else {
-                    @Suppress("DEPRECATION")
-                    fallbackRingtone?.streamType = android.media.AudioManager.STREAM_ALARM
+                val player = android.media.MediaPlayer.create(this, soundResId)
+                if (player != null) {
+                    player.setAudioAttributes(mediaAttributes)
+                    player.isLooping = true
+                    player.start()
+                    mediaPlayer = player
+                    soundStarted = true
+                    android.util.Log.d("AlarmActivity", "✅ Playing ${selectedSound.name} with USAGE_MEDIA")
                 }
-                fallbackRingtone?.play()
-            } catch (e2: Exception) {
-                e2.printStackTrace()
+            } catch (e: Exception) {
+                android.util.Log.e("AlarmActivity", "❌ USAGE_MEDIA failed", e)
+                mediaPlayer?.release()
+                mediaPlayer = null
             }
+        }
 
-            // Ultimate fallback if RingtoneManager also fails or no sound is available
+        // Attempt 3: ToneGenerator
+        if (!soundStarted) {
             try {
                 toneGenerator = ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100)
-                toneGenerator?.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 60000) // 1 min
-            } catch (e3: Exception) {
-                e3.printStackTrace()
+                toneGenerator?.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 60000)
+            } catch (e: Exception) {
+                android.util.Log.e("AlarmActivity", "❌ ToneGenerator failed", e)
             }
         }
 
@@ -154,7 +170,6 @@ class AlarmActivity : ComponentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        fallbackRingtone?.stop()
         toneGenerator?.stopTone()
         toneGenerator?.release()
         toneGenerator = null

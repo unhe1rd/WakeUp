@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(onSaveAndFinishOnboarding: () -> Unit) {
     val context = LocalContext.current
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
     val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
@@ -107,6 +107,18 @@ fun OnboardingScreen(onSaveAndFinishOnboarding: () -> Unit) {
                 )
 
                 2 -> OnboardingPage(
+                    icon = Icons.Rounded.CheckCircle,
+                    title = "🎵 Рингтоны",
+                    subtitle = "В настройках ты можешь выбрать звук будильника из 15 мелодий — от спокойных до самых громких. Найди ту, которая точно тебя разбудит!",
+                    buttonText = "Далее",
+                    onButtonClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(3)
+                        }
+                    }
+                )
+
+                3 -> OnboardingPage(
                     icon = Icons.Rounded.CheckCircle,
                     title = "Всё готово!",
                     subtitle = "Теперь будильник настроен правильно и точно сможет вас разбудить.",

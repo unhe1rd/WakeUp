@@ -12,6 +12,20 @@ import com.bananchiki.wakeup.AlarmActivity
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val alarmId = intent.getIntExtra("alarm_id", -1)
+        val taskType = intent.getStringExtra("task_type") ?: "NONE"
+        val alarmLabel = intent.getStringExtra("alarm_label") ?: "Wake up!"
+
+        // Launch AlarmActivity directly so sound plays IMMEDIATELY
+        val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            putExtra("alarm_id", alarmId)
+            putExtra("task_type", taskType)
+            putExtra("alarm_label", alarmLabel)
+        }
+        context.startActivity(alarmIntent)
+
+        // Also show notification as backup (in case direct launch is blocked)
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "alarm_channel"
 
@@ -27,16 +41,9 @@ class AlarmReceiver : BroadcastReceiver() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            putExtra("alarm_id", intent.getIntExtra("alarm_id", -1))
-            putExtra("task_type", intent.getStringExtra("task_type") ?: "NONE")
-            putExtra("alarm_label", intent.getStringExtra("alarm_label") ?: "Wake up!")
-        }
-
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            alarmId,
             alarmIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -44,14 +51,12 @@ class AlarmReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("Wake Up!")
-            .setContentText("Alarm is ringing")
+            .setContentText(alarmLabel)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(pendingIntent, true)
             .setAutoCancel(true)
             .build()
-
-        val alarmId = intent.getIntExtra("alarm_id", 0)
 
         notificationManager.notify(alarmId, notification)
     }
