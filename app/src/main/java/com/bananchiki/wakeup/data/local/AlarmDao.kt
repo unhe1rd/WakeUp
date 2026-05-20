@@ -12,6 +12,9 @@ interface AlarmDao {
     @Query("SELECT * FROM alarms ORDER BY hour, minute ASC")
     suspend fun getAllAlarmsList(): List<Alarm>
 
+    @Query("SELECT * FROM alarms WHERE id = :alarmId LIMIT 1")
+    suspend fun getAlarmById(alarmId: Int): Alarm?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(alarm: Alarm)
 

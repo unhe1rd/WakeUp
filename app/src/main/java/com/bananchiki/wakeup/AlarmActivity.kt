@@ -15,6 +15,9 @@ import com.bananchiki.wakeup.ui.alarm.AlarmScreen
 import com.bananchiki.wakeup.ui.theme.WakeUpTheme
 import com.bananchiki.wakeup.data.AchievementManager
 import com.bananchiki.wakeup.data.preferences.RingtonePreferenceManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AlarmActivity : ComponentActivity() {
     private var mediaPlayer: android.media.MediaPlayer? = null
@@ -181,7 +184,26 @@ class AlarmActivity : ComponentActivity() {
         val alarmId = intent.getIntExtra("alarm_id", 0)
         notificationManager.cancel(alarmId)
 
+        // Delete one-time alarms after they fire
+        deleteOneTimeAlarmIfNeeded(alarmId)
+
         finish()
+    }
+
+    private fun deleteOneTimeAlarmIfNeeded(alarmId: Int) {
+        if (alarmId <= 0) return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val db = com.bananchiki.wakeup.data.local.AlarmDatabase.getDatabase(this@AlarmActivity)
+                val alarm = db.alarmDao().getAlarmById(alarmId)
+                if (alarm != null && alarm.daysOfWeek.all { it == '0' }) {
+                    db.alarmDao().delete(alarm)
+                    android.util.Log.d("AlarmActivity", "✅ One-time alarm #$alarmId deleted")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AlarmActivity", "Failed to delete one-time alarm", e)
+            }
+        }
     }
 
     override fun onDestroy() {

@@ -251,38 +251,53 @@ fun AlarmCard(
 
 @Composable
 private fun DaysOfWeekRow(alarm: Alarm) {
-    val dayLetters = listOf("S", "M", "T", "W", "T", "F", "S")
+    val isOneTime = alarm.daysOfWeek.all { it == '0' }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        dayLetters.forEachIndexed { index, letter ->
-            val isActive = alarm.isDayActive(index)
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(16.dp)
-            ) {
-                Text(
-                    text = letter,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 9.sp,
-                        color = if (isActive)
-                            Amber
-                        else
-                            MaterialTheme.colorScheme.outline,
-                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-                    )
+    Box(modifier = Modifier.height(20.dp), contentAlignment = Alignment.CenterStart) {
+        if (isOneTime) {
+            Text(
+                text = "Без повтора",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Normal
                 )
-                Box(
-                    modifier = Modifier
-                        .padding(top = 2.dp)
-                        .size(4.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isActive)
-                                Amber
-                            else
-                                Color.Transparent
+            )
+        } else {
+            val dayLetters = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                dayLetters.forEachIndexed { index, letter ->
+                    val isActive = alarm.isDayActive(index)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.width(20.dp)
+                    ) {
+                        Text(
+                            text = letter,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 9.sp,
+                                color = if (isActive)
+                                    Amber
+                                else
+                                    MaterialTheme.colorScheme.onSurface,
+                                fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+                            )
                         )
-                )
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 2.dp)
+                                .size(4.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isActive)
+                                        Amber
+                                    else
+                                        Color.Transparent
+                                )
+                        )
+                    }
+                }
             }
         }
     }
