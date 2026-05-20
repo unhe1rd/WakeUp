@@ -90,19 +90,35 @@ fun OnboardingScreen(onSaveAndFinishOnboarding: () -> Unit) {
                     icon = Icons.Rounded.NotificationsActive,
                     title = "Уведомления",
                     subtitle = "Для правильной работы будильника необходимо разрешить показ уведомлений.",
-                    buttonText = "Далее",
+                    buttonText = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) "Разрешить" else "Далее",
                     onButtonClick = {
-                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            try {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } catch (e: Exception) {
+                                coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                            }
+                        } else {
+                            coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                        }
                     }
                 )
 
                 1 -> OnboardingPage(
                     icon = Icons.Rounded.Settings,
                     title = "Полный экран",
-                    subtitle = "Перейдите в настройки и разрешите показ уведомлений во весь экран, чтобы будильник мог разбудить вас поверх блокировки.",
-                    buttonText = "В настройки",
+                    subtitle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) "Перейдите в настройки и разрешите показ уведомлений во весь экран, чтобы будильник мог разбудить вас поверх блокировки." else "Разрешение на полный экран уже выдано системой.",
+                    buttonText = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) "В настройки" else "Далее",
                     onButtonClick = {
-                        fullScreenIntentPermissionLauncher.launch(intent)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            try {
+                                fullScreenIntentPermissionLauncher.launch(intent)
+                            } catch (e: Exception) {
+                                coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                            }
+                        } else {
+                            coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                        }
                     }
                 )
 
